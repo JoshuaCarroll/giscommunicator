@@ -1,8 +1,0 @@
-﻿{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "sqldb_connection": "Server=tcp:arkansasares.database.windows.net,1433;Initial Catalog=ARES;Persist Security Info=False;User ID=arkansasares;Password=Gpc@#Ihr1^3IP8bx;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-  }
-}
