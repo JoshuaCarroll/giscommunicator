@@ -23,7 +23,7 @@ namespace gisreporter
 
         static void Main(string[] args)
         {
-            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(2, 0, 0, 0));
+            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(10, 0, 0, 0));
 
             if (args.Length == 0)
             {
@@ -142,7 +142,6 @@ Netlogger
                 // Validate file path
                 if (Directory.Exists(winlinkPath))
                 {
-
                     // Get all files 
                     string[] files = Directory.GetFiles(winlinkPath, "*.mime");
 
