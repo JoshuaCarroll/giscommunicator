@@ -132,24 +132,7 @@ namespace gisreporter
                             }
                         }
 
-                        try
-                        {
-                            MessageString = document.SelectSingleNode("RMS_Express_Form/variables/formdata", mgr).InnerText;
-                        }
-                        catch
-                        {
-                            try
-                            {
-                                string base64TextData = msgArr[1];
-                                int encodedTextStartIndex = base64TextData.IndexOf("\r\n\r\n");
-                                byte[] valueBytes2 = Convert.FromBase64String(base64TextData.Substring(encodedTextStartIndex));
-                                MessageString = Encoding.UTF8.GetString(valueBytes);
-                            }
-                            catch
-                            {
-                                MessageString = msgArr[1];
-                            }
-                        }
+                        MessageString = msgArr[1];
 
                         SendersCallsign = document.SelectSingleNode("RMS_Express_Form/form_parameters/senders_callsign", mgr).InnerText;
                     }
@@ -164,7 +147,7 @@ namespace gisreporter
 
         public MapItem ToMapItem()
         {
-            MapItem mapItem = new MapItem(MessageSubject, MessageBody, Latitude, Longitude, "", "", DateTimeSent, UniqueID);
+            MapItem mapItem = new MapItem(MessageSubject, MessageString, Latitude, Longitude, "", "", DateTimeSent, UniqueID);
             return mapItem;
         }
     }
