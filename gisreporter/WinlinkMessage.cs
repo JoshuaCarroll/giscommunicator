@@ -81,9 +81,9 @@ namespace gisreporter
                         MessageSubject = document.SelectSingleNode("RMS_Express_Form/form_parameters/display_form", mgr).InnerText.Replace("_", " ");
 
                         MessageSubject = MessageSubject.Substring(0, MessageSubject.LastIndexOf('.'));
-                        if (MessageSubject.EndsWith(" Viewer"))
+                        if (MessageSubject.ToLower().EndsWith(" viewer"))
                         {
-                            MessageSubject = MessageSubject.Substring(0, MessageSubject.LastIndexOf(" Viewer", StringComparison.CurrentCultureIgnoreCase)).Trim();
+                            MessageSubject = MessageSubject.Substring(0, MessageSubject.ToLower().LastIndexOf(" viewer")).Trim();
                         }
 
                         try
