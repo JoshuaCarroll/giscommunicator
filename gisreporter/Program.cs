@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Text.Json;
-using System.Diagnostics;
 using System.Text;
 
 namespace gisreporter
@@ -23,7 +22,7 @@ namespace gisreporter
 
         static void Main(string[] args)
         {
-            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(10, 0, 0, 0));
+            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
 
             if (args.Length == 0)
             {
