@@ -23,20 +23,19 @@ namespace gisreceiver
 
             if (json != String.Empty)
             {
-
                 MapItem[] mapItems = JsonConvert.DeserializeObject<MapItem[]>(json);
 
                 using (SqlConnection Connection = new SqlConnection(connectionString))
                 {
                     Connection.Open();
-                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime;";
+                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient;";
 
                     foreach (gisreporter.MapItem mapItem in mapItems)
                     {
                         if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                         {
                             SqlCommand cmd = new SqlCommand(strSql, Connection);
-                            CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime);
+                            CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient);
                         }
                     }
                     Connection.Close();
@@ -46,25 +45,36 @@ namespace gisreceiver
 
                 return (ActionResult)new OkObjectResult("Ok");
             }
+            else if (req.Query["recipient"] != "")
+            {
+                try
+                {
+                    string recipient = req.Query["recipient"];
+                    log.LogInformation("recipient: " + recipient);
+                    string kml = "";
+                    using (SqlConnection Connection = new SqlConnection(connectionString))
+                    {
+                        string strSql = "exec dbo.spGetMapItems @recipient;";
+                        SqlCommand cmd = new SqlCommand(strSql, Connection);
+                        cmd.Parameters.AddWithValue("@recipient", recipient);
+                        Connection.Open();
+                        kml = cmd.ExecuteScalar().ToString();
+                        Connection.Close();
+                    }
+                    return (ActionResult)new OkObjectResult(kml);
+                }
+                catch (Exception ex)
+                {
+                    return (ActionResult)new OkObjectResult(ex.Message);
+                }
+            }
             else
             {
-                string kml = "";
-                using (SqlConnection Connection = new SqlConnection(connectionString))
-                {
-                    Connection.Open();
-                    string strSql = "exec dbo.genBasicKML;";
-
-                    SqlCommand cmd = new SqlCommand(strSql, Connection);
-                    kml = cmd.ExecuteScalar().ToString();
-
-                    Connection.Close();
-
-                }
-                return (ActionResult)new OkObjectResult(kml);
+                return (ActionResult)new OkObjectResult("No recipient specified");
             }
         }
 
-        public static void CreateMapItemRecord(SqlCommand cmd, string DataSet, string UID, string Latitude, string Longitude, string LocationDescription, string Name, string Description, string Icon, string ReportedDateTime)
+        public static void CreateMapItemRecord(SqlCommand cmd, string DataSet, string UID, string Latitude, string Longitude, string LocationDescription, string Name, string Description, string Icon, string ReportedDateTime, string Recipient)
         {
             cmd.Parameters.AddWithValue("@DataSet", DataSet);
             cmd.Parameters.AddWithValue("@UID", UID);
@@ -75,6 +85,7 @@ namespace gisreceiver
             cmd.Parameters.AddWithValue("@Description", Description);
             cmd.Parameters.AddWithValue("@Icon", Icon);
             cmd.Parameters.AddWithValue("@ReportedDateTime", ReportedDateTime);
+            cmd.Parameters.AddWithValue("@Recipient", Recipient);
             cmd.ExecuteNonQuery();
         }
     }

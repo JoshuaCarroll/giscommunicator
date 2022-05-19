@@ -16,6 +16,7 @@ namespace gisreporter
         public string MessageString { get; set; }
         public string SendersCallsign { get; set; }
         public string UniqueID { get; set; }
+        public string Recipient { get; set; }
 
 
         public WinlinkMessage(string messageBody, string filename)
@@ -35,6 +36,19 @@ namespace gisreporter
                     UniqueID = filename;
 
                     string[] msgArr = MessageBody.Split(baseBoundary);
+
+                    string[] header = msgArr[0].Split("\r\n");
+
+                    string recipientPrefix = "To: ";
+                    for (int i = 0; i < header.Length; i++)
+                    {
+                        if (header[i].StartsWith(recipientPrefix))
+                        {
+                            Recipient = header[i].Substring(recipientPrefix.Length, header[i].IndexOf('@') - recipientPrefix.Length);
+                            break;
+                        }
+                    }
+
                     string base64XmlData = msgArr[2];
 
                     int encodedStringStartIndex = base64XmlData.IndexOf("\r\n\r\n");
@@ -102,9 +116,9 @@ namespace gisreporter
                                 {
                                     DateTimeSent = document.SelectSingleNode("RMS_Express_Form/variables/datetime", mgr).InnerText;
                                 }
-                                catch (Exception ex)
+                                catch
                                 {
-                                    DateTimeSent = DateTime.Now.ToString();
+                                    DateTimeSent = DateTime.UtcNow.ToString();
                                 }
                             }
                         }
@@ -134,6 +148,10 @@ namespace gisreporter
 
                         MessageString = msgArr[1];
 
+                        MessageString = MessageString.Replace("\r\nContent-Type: text/plain; charset=\"iso-8859-1\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n\r\n","");
+                        MessageString = MessageString.Replace("=20", " ").Replace("=A0", " ").Replace("=B0", "°");
+                        MessageString = MessageString.Substring(0, MessageString.IndexOf("\r\n\r\n------------------------------------\r\nExpress Sending Station: "));
+
                         SendersCallsign = document.SelectSingleNode("RMS_Express_Form/form_parameters/senders_callsign", mgr).InnerText;
                     }
                 }
@@ -147,7 +165,7 @@ namespace gisreporter
 
         public MapItem ToMapItem()
         {
-            MapItem mapItem = new MapItem(MessageSubject, MessageString, Latitude, Longitude, "", "", DateTimeSent, UniqueID);
+            MapItem mapItem = new MapItem(MessageSubject, MessageString, Latitude, Longitude, "", "", DateTimeSent, UniqueID, Recipient);
             return mapItem;
         }
     }
