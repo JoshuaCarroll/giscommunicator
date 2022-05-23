@@ -113,16 +113,20 @@ namespace gisserver.map
                 p.WeatherState = ddlStates.SelectedValue;
                 p.NetloggerNetName = ddlActiveNets.SelectedItem.Text;
                 p.NetloggerUrl = ddlActiveNets.SelectedItem.Value;
+                int start = p.NetloggerUrl.IndexOf("?");
+                int length = p.NetloggerUrl.IndexOf("&") - start;
+                p.NetloggerServer = p.NetloggerUrl.Substring(start, length);
 
                 p.ToString();
 
                 string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 <Document>
+    <name>Loader</name>
     <NetworkLink>
 	    <name>AA5JC SitRep</name>
 	    <open>1</open>
-	    <description>This level is needed to ensure connection recovery in case of internet outage. Refreshes </description>
+	    <description>Needed to ensure recovery in case of internet outage.</description>
 	    <LookAt>
 		    <longitude>-92.10432730888137</longitude>
 		    <latitude>34.82677287952281</latitude>
@@ -157,7 +161,7 @@ namespace gisserver.map
 
                 Response.Clear();
                 Response.ContentType = "application/vnd.google-earth.kml+xml";
-                Response.AddHeader("content-disposition", "attachment;    filename=sitrep.kml");
+                Response.AddHeader("content-disposition", "attachment;    filename=sitrep-loader.kml");
                 Response.Write(kml);
                 Response.End();
             }
