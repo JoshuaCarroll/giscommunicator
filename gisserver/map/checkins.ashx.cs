@@ -23,14 +23,48 @@ namespace gisserver.map
                 Parameters p = Parameters.FromString(strP);
 
                 XDocument xml = XDocument.Load(p.NetloggerUrl);
+
+                // Check and make sure this net is open
+                if (xml.Element("Error") != null && xml.Element("Error").Value.StartsWith("Query Returned an empty result"))
+                {
+                    // Loop through servers and nets to find a net with this name
+                    XDocument xPastNets = XDocument.Load("http://www.netlogger.org/api/GetPastNets.php?Interval=30");
+
+                    XElement server = (from xServer in xml.Descendants("Server")
+                                    where (string)xServer.Element("NetName") == p.NetloggerServer
+                                    select xServer).First();
+
+                    //foreach (XElement server in xml.Descendants("Server"))
+                    //{
+                    //    if (server.Element("ServerName").Value == p.NetloggerServer)
+                    //    {
+                            string netID = (from net in server.Elements("Net")
+                                                        where (string)net.Element("NetName") == p.NetloggerNetName
+                                                        select net.Element("NetID")).First().Value;
+                    //        break;
+                    //    }
+                    //}
+                }
+
                 foreach (XElement checkin in xml.Descendants("Checkin"))
                 {
                     if (checkin.Element("Callsign").Value.Trim() != string.Empty && checkin.Element("CityCountry").Value.Trim() != string.Empty)
                     {
                         string name = checkin.Element("FirstName").Value + " " + checkin.Element("Callsign").Value;
                         string address = checkin.Element("Street").Value + ", " + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value;
+                        string description = "<![CDATA[ <h1>" + name + "</h1><p>" + checkin.Element("Street").Value + "<br>" + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value + "</p> ]]> ";
 
                         string s = string.Format(@"<Placemark><name>{0}</name><address>{1}</address></Placemark>", name, address);
+
+                        kml += string.Format(@"
+                                <Placemark>
+                                    <name>{0}</name>
+                                    <styleUrl>#iconStyle</styleUrl>
+                                    <address>{1}</address>                                    
+                                    <description>{2}</description>
+                                    <Style><IconStyle><Icon><href>http://aa5jc.com/map/icons/person.png</href></Icon><color>0Effffff</color></IconStyle></Style>
+                                </Placemark>", name, address, description);
+
                         kml += s;
                     }
                 }
@@ -38,7 +72,7 @@ namespace gisserver.map
 
             kml += "</Document></kml>";
 
-            context.Response.ContentType = "application/vnd.google-earth.kml+xml";
+            //context.Response.ContentType = "application/vnd.google-earth.kml+xml";
             context.Response.Write(kml);
         }
 
