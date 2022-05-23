@@ -15,6 +15,7 @@ namespace gisserver
         public string WeatherState { get; set; }
         public string NetloggerNetName { get; set; }
         public string NetloggerUrl { get; set; }
+        public string NetloggerServer { get; set; }
 
         public static Parameters FromString(string encodedString)
         {
