@@ -24,7 +24,21 @@ namespace gisserver.map
                 Parameters p = Parameters.FromString(strP);
 
                 string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom""><Document>";
+<kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom"">
+<Document>
+	<Folder>
+		<name>Overlays</name>
+		<open>0</open>
+		<ScreenOverlay id=""khScreenOverlay756"">
+			<Icon>
+				<href>https://chart.apis.google.com/chart?chst=d_text_outline&amp;chld=ffffff|25|l|000000|b|AA5JC%20SitRep</href>
+			</Icon>
+			<overlayXY x=""1.0"" y=""1.0"" xunits=""fraction"" yunits=""fraction""/>
+			<screenXY x=""0.991"" y=""0.11"" xunits=""fraction"" yunits=""fraction""/>
+			<rotation>0</rotation>
+			<size x=""0"" y=""0"" xunits=""pixels"" yunits=""pixels""/>
+		</ScreenOverlay>
+	</Folder>";
 
                 if (p.Winlink)
                 {

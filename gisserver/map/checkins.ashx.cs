@@ -16,7 +16,10 @@ namespace gisserver.map
         public void ProcessRequest(HttpContext context)
         {
             string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom""><Document>";
+<kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom""><Document>
+<Style id=""hidelabel""><IconStyle><hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/></IconStyle><LabelStyle><color>00ffffff</color></LabelStyle></Style><Style id=""showlabel"">
+<IconStyle><hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/><color>FFffffff</color></IconStyle><LabelStyle><color>FFffffff</color></LabelStyle></Style><StyleMap id=""iconStyle"">
+<Pair><key>normal</key><styleUrl>#hidelabel</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#showlabel</styleUrl></Pair></StyleMap>";
 
             string strP = context.Request.QueryString["p"];
             if (strP != null && strP != "")
@@ -55,7 +58,6 @@ namespace gisserver.map
                     {
                         string name = checkin.Element("FirstName").Value + " " + checkin.Element("Callsign").Value;
                         string address = checkin.Element("Street").Value + ", " + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value;
-                        //string description = "<![CDATA[ <h1>" + name + "</h1><p>" + checkin.Element("Street").Value + "<br>" + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value + "</p> ]]> ";
 
                         kml += string.Format(@"
                                 <Placemark>

@@ -129,7 +129,8 @@ namespace gisserver.map
                 string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 <Document>
-    <name>Loader</name>
+    <name>" + filename + @"</name>
+    <open>1</open>
     <NetworkLink>
 	    <name>AA5JC SitRep</name>
 	    <open>1</open>
@@ -149,20 +150,6 @@ namespace gisserver.map
 		    <refreshInterval>3600</refreshInterval>
 	    </Link>
     </NetworkLink>
-	<Folder>
-		<name>Overlays</name>
-		<open>0</open>
-		<ScreenOverlay id=""khScreenOverlay756"">
-			<name>AA5JC SitRep</name>
-			<Icon>
-				<href>https://chart.apis.google.com/chart?chst=d_text_outline&amp;chld=ffffff|25|l|000000|b|AA5JC%20SitRep</href>
-			</Icon>
-			<overlayXY x=""1.0"" y=""1.0"" xunits=""fraction"" yunits=""fraction""/>
-			<screenXY x=""0.991"" y=""0.11"" xunits=""fraction"" yunits=""fraction""/>
-			<rotation>0</rotation>
-			<size x=""0"" y=""0"" xunits=""pixels"" yunits=""pixels""/>
-		</ScreenOverlay>
-	</Folder>
 </Document>
 </kml> ";
 
