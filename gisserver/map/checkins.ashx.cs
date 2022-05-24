@@ -22,6 +22,9 @@ namespace gisserver.map
             {
                 Parameters p = Parameters.FromString(strP);
 
+                ///TODO: Issue #11
+                p.NetloggerUrl = p.NetloggerUrl.Replace("https://", "http://");
+
                 XDocument xml = XDocument.Load(p.NetloggerUrl);
 
                 // Check and make sure this net is open
