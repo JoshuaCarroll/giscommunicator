@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Xml.Linq;
@@ -28,25 +29,24 @@ namespace gisserver.map
                 XDocument xml = XDocument.Load(p.NetloggerUrl);
 
                 // Check and make sure this net is open
-                if (xml.Element("Error") != null && xml.Element("Error").Value.StartsWith("Query Returned an empty result"))
+                if (xml.Element("NetLoggerXML").Element("Error") != null && xml.Element("NetLoggerXML").Element("Error").Value.StartsWith("Query Returned an empty result"))
                 {
                     // Loop through servers and nets to find a net with this name
-                    XDocument xPastNets = XDocument.Load("http://www.netlogger.org/api/GetPastNets.php?Interval=30");
+                    XDocument xPastNets = XDocument.Load("http://www.netlogger.org/api/GetPastNets.php?Interval=10");
+                    
+                    XElement xServer = (from Server in xPastNets.Element("NetLoggerXML").Element("ServerList").Descendants("Server")
+                                    where (string)Server.Element("ServerName") == p.NetloggerServer
+                                    select Server).First();
 
-                    XElement server = (from xServer in xml.Descendants("Server")
-                                    where (string)xServer.Element("NetName") == p.NetloggerServer
-                                    select xServer).First();
+                    string netID = (from net in xServer.Elements("Net")
+                                    where (string)net.Element("NetName") == p.NetloggerNetName
+                                    select net.Element("NetID")).First().Value;
 
-                    //foreach (XElement server in xml.Descendants("Server"))
-                    //{
-                    //    if (server.Element("ServerName").Value == p.NetloggerServer)
-                    //    {
-                            string netID = (from net in server.Elements("Net")
-                                                        where (string)net.Element("NetName") == p.NetloggerNetName
-                                                        select net.Element("NetID")).First().Value;
-                    //        break;
-                    //    }
-                    //}
+                    xml = XDocument.Load(string.Format("http://www.netlogger.org/api/GetPastNetCheckins.php?ServerName={0}&NetName={1}&NetID={2}", p.NetloggerServer, p.NetloggerNetName, netID));
+                }
+                else
+                {
+                    Debug.WriteLine(xml.Element("Error"));
                 }
 
                 foreach (XElement checkin in xml.Descendants("Checkin"))
