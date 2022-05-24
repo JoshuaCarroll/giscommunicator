@@ -55,20 +55,15 @@ namespace gisserver.map
                     {
                         string name = checkin.Element("FirstName").Value + " " + checkin.Element("Callsign").Value;
                         string address = checkin.Element("Street").Value + ", " + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value;
-                        string description = "<![CDATA[ <h1>" + name + "</h1><p>" + checkin.Element("Street").Value + "<br>" + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value + "</p> ]]> ";
-
-                        string s = string.Format(@"<Placemark><name>{0}</name><address>{1}</address></Placemark>", name, address);
+                        //string description = "<![CDATA[ <h1>" + name + "</h1><p>" + checkin.Element("Street").Value + "<br>" + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value + "</p> ]]> ";
 
                         kml += string.Format(@"
                                 <Placemark>
                                     <name>{0}</name>
                                     <styleUrl>#iconStyle</styleUrl>
                                     <address>{1}</address>                                    
-                                    <description>{2}</description>
                                     <Style><IconStyle><Icon><href>http://aa5jc.com/map/icons/person.png</href></Icon><color>0Effffff</color></IconStyle></Style>
-                                </Placemark>", name, address, description);
-
-                        kml += s;
+                                </Placemark>", name, address);
                     }
                 }
             }
