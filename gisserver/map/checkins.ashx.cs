@@ -15,19 +15,51 @@ namespace gisserver.map
 
         public void ProcessRequest(HttpContext context)
         {
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+
             string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom""><Document>
-<Style id=""hidelabel""><IconStyle><hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/></IconStyle><LabelStyle><color>00ffffff</color></LabelStyle></Style><Style id=""showlabel"">
-<IconStyle><hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/><color>FFffffff</color></IconStyle><LabelStyle><color>FFffffff</color></LabelStyle></Style><StyleMap id=""iconStyle"">
-<Pair><key>normal</key><styleUrl>#hidelabel</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#showlabel</styleUrl></Pair></StyleMap>";
+<Style id=""checkinHidelabel"">
+    <IconStyle>
+        <hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/>
+        <Icon>
+            <href>http://aa5jc.com/map/icons/person.png</href>
+        </Icon>
+        <color>ffffffff</color>
+    </IconStyle>
+    <LabelStyle>
+        <color>00ffffff</color>
+    </LabelStyle>
+</Style>
+<Style id=""checkinShowlabel"">
+    <IconStyle>
+        <hotSpot x=""15"" y=""0"" xunits=""pixels"" yunits=""pixels""/>
+        <color>FFffffff</color>
+        <Icon>
+            <href>http://aa5jc.com/map/icons/person.png</href>
+        </Icon>
+    </IconStyle>
+    <LabelStyle>
+        <color>FFffffff</color>
+    </LabelStyle>
+</Style>
+<StyleMap id=""checkinIconStyle"">
+    <Pair>
+        <key>normal</key>
+        <styleUrl>#checkinHidelabel</styleUrl>
+    </Pair>
+    <Pair>
+        <key>highlight</key>
+        <styleUrl>#checkinShowlabel</styleUrl>
+    </Pair>
+</StyleMap>";
 
             string strP = context.Request.QueryString["p"];
             if (strP != null && strP != "")
             {
                 Parameters p = Parameters.FromString(strP);
 
-                ///TODO: Issue #11
-                p.NetloggerUrl = p.NetloggerUrl.Replace("https://", "http://");
+                p.NetloggerUrl = p.NetloggerUrl.Replace("http://", "https://");
 
                 XDocument xml = XDocument.Load(p.NetloggerUrl);
 
@@ -56,16 +88,16 @@ namespace gisserver.map
                 {
                     if (checkin.Element("Callsign").Value.Trim() != string.Empty && checkin.Element("CityCountry").Value.Trim() != string.Empty)
                     {
-                        string name = checkin.Element("FirstName").Value + " " + checkin.Element("Callsign").Value;
+                        string name = checkin.Element("Callsign").Value;
                         string address = checkin.Element("Street").Value + ", " + checkin.Element("CityCountry").Value + ", " + checkin.Element("State").Value + " " + checkin.Element("Zip").Value;
 
                         kml += string.Format(@"
                                 <Placemark>
                                     <name>{0}</name>
-                                    <styleUrl>#iconStyle</styleUrl>
-                                    <address>{1}</address>                                    
-                                    <Style><IconStyle><Icon><href>http://aa5jc.com/map/icons/person.png</href></Icon><color>0Effffff</color></IconStyle></Style>
-                                </Placemark>", name, address);
+                                    <styleUrl>#checkinIconStyle</styleUrl>
+                                    <address>{1}</address>   
+                                    <description>{2}</description>
+                                </Placemark>", name, address, checkin.Element("FirstName").Value);
                     }
                 }
             }
