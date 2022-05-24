@@ -113,11 +113,18 @@ namespace gisserver.map
                 p.WeatherState = ddlStates.SelectedValue;
                 p.NetloggerNetName = ddlActiveNets.SelectedItem.Text;
                 p.NetloggerUrl = ddlActiveNets.SelectedItem.Value;
-                int start = p.NetloggerUrl.IndexOf("?");
+                int start = p.NetloggerUrl.IndexOf("=") + 1;
                 int length = p.NetloggerUrl.IndexOf("&") - start;
                 p.NetloggerServer = p.NetloggerUrl.Substring(start, length);
-
                 p.ToString();
+
+                string filename = "";
+                if (p.Winlink)
+                    filename += p.WinlinkRecipient + "-";
+                if (p.Weather)
+                    filename += p.WeatherState + "-";
+                if (p.Netlogger)
+                    filename += p.NetloggerNetName.Substring(0, 15);
 
                 string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom"">
@@ -161,7 +168,7 @@ namespace gisserver.map
 
                 Response.Clear();
                 Response.ContentType = "application/vnd.google-earth.kml+xml";
-                Response.AddHeader("content-disposition", "attachment;    filename=sitrep-loader.kml");
+                Response.AddHeader("content-disposition", "attachment;    filename=" + filename + ".kml");
                 Response.Write(kml);
                 Response.End();
             }
