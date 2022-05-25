@@ -69,7 +69,14 @@ namespace gisserver.map
 
                 if (p.Weather)
                 {
-                    string url = string.Format("https://api.weather.gov/alerts/active?area={0}", p.WeatherState);
+                    kml += "<NetworkLink><name>" + p.WeatherState + @" Weather</name>
+	<open>0</open><description></description>
+	<Link>";
+                    kml += String.Format("<href>{0}/map/weather.ashx?p={1}</href>", thisServer, strP);
+                    kml += @"			<refreshMode>onInterval</refreshMode>
+			<refreshInterval>120</refreshInterval>
+		</Link>
+	</NetworkLink>";
                 }
 
                 kml += "</Document></kml>";
