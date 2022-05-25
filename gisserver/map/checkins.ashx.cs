@@ -31,6 +31,10 @@ namespace gisserver.map
     <LabelStyle>
         <color>00ffffff</color>
     </LabelStyle>
+    <LineStyle>
+        <color>ffffffff</color>
+        <width>0</width>
+    </LineStyle>
 </Style>
 <Style id=""checkinShowlabel"">
     <IconStyle>
@@ -43,6 +47,10 @@ namespace gisserver.map
     <LabelStyle>
         <color>FFffffff</color>
     </LabelStyle>
+    <LineStyle>
+        <color>ffffffff</color>
+        <width>0</width>
+    </LineStyle>
 </Style>
 <StyleMap id=""checkinIconStyle"">
     <Pair>
