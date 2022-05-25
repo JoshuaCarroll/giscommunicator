@@ -109,18 +109,26 @@ namespace gisserver.map
                 p.Winlink = chkWinlink.Checked;
                 p.Weather = chkWeather.Checked;
                 p.Netlogger = chkNetlogger.Checked;
-                p.WinlinkRecipient = txtRecipient.Text;
-                p.WeatherState = ddlStates.SelectedValue;
-                p.NetloggerNetName = ddlActiveNets.SelectedItem.Text;
-                p.NetloggerUrl = ddlActiveNets.SelectedItem.Value;
-                int start = p.NetloggerUrl.IndexOf("=") + 1;
-                int length = p.NetloggerUrl.IndexOf("&") - start;
-                p.NetloggerServer = p.NetloggerUrl.Substring(start, length);
+
+                if (p.Winlink)
+                    p.WinlinkRecipient = txtRecipient.Text;
+
+                if (p.Weather)
+                    p.WeatherState = ddlStates.SelectedValue;
+
+                if (p.Netlogger)
+                {
+                    p.NetloggerNetName = ddlActiveNets.SelectedItem.Text;
+                    p.NetloggerUrl = ddlActiveNets.SelectedItem.Value;
+                    int start = p.NetloggerUrl.IndexOf("=") + 1;
+                    int length = p.NetloggerUrl.IndexOf("&") - start;
+                    p.NetloggerServer = p.NetloggerUrl.Substring(start, length);
+                }
                 p.ToString();
 
                 string filename = "";
                 if (p.Winlink)
-                    filename += p.WinlinkRecipient + "-";
+                    filename += p.WinlinkRecipient.Replace(" ","").Replace(',','_') + "-";
                 if (p.Weather)
                     filename += p.WeatherState + "-";
                 if (p.Netlogger)
