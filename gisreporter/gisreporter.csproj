@@ -10,10 +10,10 @@
     <DebugType></DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <IntermediateOutputPath>obj\Debug</IntermediateOutputPath>
+    <IntermediateOutputPath>obj\Debug\netcoreapp3.1</IntermediateOutputPath>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
-    <OutputPath>bin\Debug\netcoreapp3.1</OutputPath>
+    <OutputPath>bin\Debug\netcoreapp3.1\netcoreapp3.1</OutputPath>
     <DefineConstants>TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_1;</DefineConstants>
     <NoWarn>1701,1702</NoWarn>
     <NoStdLib>false</NoStdLib>
