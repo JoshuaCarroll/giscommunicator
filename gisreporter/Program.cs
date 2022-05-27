@@ -13,8 +13,6 @@ namespace gisreporter
     {
         private static string gisReceiverUrl = "https://giscommunicator.azurewebsites.net/api/gisreceiver?code=xNjuM3fBnIsZ28iTEiUNbFQcmBEdPkp5aspqxVm1aaJ6cGItH4dcyQ==";
 
-        private static string winlinkPath = "";
-        private static string netloggerCheckinsURL = "";
         private static List<MapItem> mapItems = new List<MapItem>();
         private static Timer timer = new Timer();
         private static bool continueRunning = true;
@@ -24,49 +22,30 @@ namespace gisreporter
         {
             lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
 
-            if (args.Length == 0)
-            {
-                Console.Write(@"
+            Console.Write(@"
 /-------------------------------------------------------------------------\
 |                               GIS Reporter                              |
 |                       by Joshua Carroll, AA5JC                          |
 \_________________________________________________________________________/                                                                         
 
-To run you need to specify at least one data source through the command line switches detailed below:                                           
+This program will monitor the folders specified for Winlink mapping/GIS reports. If a new
+message is received that contains mapping data, it will send the details of the report
+to a web service for consolidation.
+
+(To view the data, visit https://aa5jc.com/map)
+
+To run you need to specify at least one folder as described below:                                           
 
 Winlink
   - This will report forms that contain location data that are received
     on your computer.
   - Usage: /W [file path to your messages folder]
   - Example: /W ''C:\RMS Express\AA5JC\Messages''
-
-Netlogger
-  - This will report the list of check-ins into your net as recorded in
-    Netlogger.
-  - Usage: /N [URL]
-  - Example: /N https://www.netlogger.org/api/GetPastNetCheckins.php?ServerName=server1&NetName=net1&NetID=1111
-  - NOTE: Please see the NetLogger API Specification for details. It can be found at:
-    http://www.netlogger.org/api/The%20NetLogger%20XML%20Data%20Service%20Interface%20Specification.pdf
+  - NOTE: This can be added multiple times in case you have multiple callsigns, or want to monitor
+    a tactical address controlled from Paclink.
 
 ");
-            }
-
-            // Read command line switches into variables
-            for (int i = 0; i < args.Length; i += 2)
-            {
-                switch (args[i].ToUpper())
-                {
-                    case "/W":
-                        winlinkPath = args[i + 1];
-                        break;
-                    case "/N":
-                        netloggerCheckinsURL = args[i + 1];
-                        break;
-                    default:
-                        // do other stuff...
-                        break;
-                }
-            }
+            
 
             CheckForNewData();
 
@@ -84,17 +63,21 @@ Netlogger
                     while (i > 0);
                     Console.Write("\r                                                                 ");
 
-                    CheckForNewData();
+                    CheckForNewData(args);
                 } while (continueRunning);
             });
             t.Wait();
         }
 
-        private static void CheckForNewData()
+        private static void CheckForNewData(string[] paths)
         {
-            CheckWinlinkMessages();
+            for (int i = 0; i < paths.Length; i++)
+            {
+                CheckWinlinkMessages(paths[i]);
+            }
         }
 
+        // This is not currently used.
         private static void CheckWinlinkKml()
         {
             if (winlinkPath != string.Empty)
@@ -134,15 +117,15 @@ Netlogger
             }
         }
 
-        private static void CheckWinlinkMessages()
+        private static void CheckWinlinkMessages(string path)
         {
-            if (winlinkPath != string.Empty)
+            if (path != string.Empty)
             {
                 // Validate file path
-                if (Directory.Exists(winlinkPath))
+                if (Directory.Exists(path))
                 {
                     // Get all files 
-                    string[] files = Directory.GetFiles(winlinkPath, "*.mime");
+                    string[] files = Directory.GetFiles(path, "*.mime");
 
                     // Check each of these files to see if they are plotable and new
                     DateTime newestNewMessageReceived = lastMessageReceived;
