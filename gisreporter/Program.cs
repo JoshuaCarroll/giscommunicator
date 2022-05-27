@@ -34,20 +34,17 @@ to a web service for consolidation.
 
 (To view the data, visit https://aa5jc.com/map)
 
-To run you need to specify at least one folder as described below:                                           
-
-Winlink
-  - This will report forms that contain location data that are received
-    on your computer.
-  - Usage: /W [file path to your messages folder]
+Usage: dotnet gisreporter.dll [file path to your messages folder]
   - Example: /W ''C:\RMS Express\AA5JC\Messages''
-  - NOTE: This can be added multiple times in case you have multiple callsigns, or want to monitor
+
+Note: This can be added multiple times in case you have multiple callsigns, or want to monitor
     a tactical address controlled from Paclink.
+  - Example: /W ''C:\RMS Express\AA5JC\Messages'' ''C:\Paclink\Accounts\DELTA_Account''
 
 ");
             
 
-            CheckForNewData();
+            CheckForNewData(args);
 
             Task t = Task.Run(async () => {
                 do
@@ -78,7 +75,7 @@ Winlink
         }
 
         // This is not currently used.
-        private static void CheckWinlinkKml()
+        private static void CheckWinlinkKml(string winlinkPath)
         {
             if (winlinkPath != string.Empty)
             {
