@@ -7,7 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using gisreporter;
+using gisreporter_;
 using System.Data.SqlClient;
 
 namespace gisreceiver
@@ -30,7 +30,7 @@ namespace gisreceiver
                     Connection.Open();
                     string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient;";
 
-                    foreach (gisreporter.MapItem mapItem in mapItems)
+                    foreach (MapItem mapItem in mapItems)
                     {
                         if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                         {
