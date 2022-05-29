@@ -19,12 +19,6 @@
     <NoStdLib>false</NoStdLib>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="rename.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="setup.bat">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="SETUP.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

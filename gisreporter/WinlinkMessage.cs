@@ -24,8 +24,8 @@ namespace gisreporter
         {
             MessageBody = messageBody;
 
-            try
-            {
+            //try
+            //{
                 string pattern = @"boundary=""?(?<boundary>[^"";\r\n]+)""?;?";
                 RegexOptions options = RegexOptions.Singleline;
                 Match BoundaryMatch = Regex.Match(MessageBody, pattern, options);
@@ -151,7 +151,12 @@ namespace gisreporter
 
                         MessageString = MessageString.Replace("\r\nContent-Type: text/plain; charset=\"iso-8859-1\"\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n\r\n","");
                         MessageString = MessageString.Replace("=20", " ").Replace("=A0", " ").Replace("=B0", "°");
-                        MessageString = MessageString.Substring(0, MessageString.IndexOf("\r\n\r\n------------------------------------\r\nExpress Sending Station: "));
+
+                        int indexOfMessageTerminator = MessageString.IndexOf("\r\n\r\n------------------------------------\r\nExpress Sending Station: ");
+                        if (indexOfMessageTerminator > -1)
+                        {
+                            MessageString = MessageString.Substring(0, indexOfMessageTerminator);
+                        }
 
                         SendersCallsign = document.SelectSingleNode("RMS_Express_Form/form_parameters/senders_callsign", mgr).InnerText;
 
@@ -255,11 +260,11 @@ namespace gisreporter
 
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("** " + ex);
-            }
+//            }
+//            catch (Exception ex)
+//            {
+//                Console.WriteLine("** " + ex);
+//            }
 
         }
 
