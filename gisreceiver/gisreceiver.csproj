@@ -22,7 +22,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\giscommunicator\gisreporter\MapItem.cs">
+    <Compile Include="..\gisreporter_\MapItem.cs">
       <Link>MapItem.cs</Link>
     </Compile>
   </ItemGroup>
