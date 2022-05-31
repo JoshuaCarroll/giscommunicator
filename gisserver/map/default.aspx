@@ -4,24 +4,48 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title></title>
+    <title>AA5JC</title>
+	<script type="text/javascript">
+
+        var copyToClipboard_originalText;
+        var copyToClipboard_originalColor;
+        var copyToClipboard_caller;
+
+        function copyToClipboard(copyText, obj) {
+            navigator.clipboard.writeText(copyText);
+
+            copyToClipboard_originalText = obj.innerText;
+            copyToClipboard_caller = obj;
+
+            obj.innerText = "URL copied to your clipboard!";
+            obj.style.backgroundColor = "#eff404";
+            
+            setTimeout(copyToClipboard_done, 2000);
+        }
+
+        function copyToClipboard_done() {
+            copyToClipboard_caller.innerText = copyToClipboard_originalText;
+            copyToClipboard_caller.style.backgroundColor = "";
+            copyToClipboard_caller = null;
+            copyToClipboard_originalText = null;
+        }
+    </script>
 </head>
 <body>
-    <h1>AA5JC SitRep</h1>
+    <h1>AA5JC SitRep Map</h1>
     <form id="form1" runat="server">
         <div>
-            <br />
-            Select the options below, then submit the form to generate your KML file.<asp:ValidationSummary ID="ValidationSummary1" runat="server" Font-Bold="True" ForeColor="#CC3300" />
-            <br />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" Font-Bold="True" ForeColor="#CC3300" />
             <ol>
                 <li>Install Google Earth, available at <a target="_blank" href="https://www.google.com/earth/about/versions/?gl=US&hl=en#download-pro">https://www.google.com/earth/</a></li>
-                <li>Select the options below:<br />
-                    <label>Select the datasets to include:</label><br />
+                <li>
+                    <asp:Label ID="lblInstructions" runat="server" Text="Select the options below, then submit the form to generate your map:"></asp:Label>
                     <ul>
-                        <li><asp:CheckBox ID="chkWinlink" runat="server" Text="Winlink GIS forms" OnCheckedChanged="chkWinlink_CheckedChanged" AutoPostBack="True" />
+                        <li><asp:CheckBox ID="chkWinlink" runat="server" Text="Winlink forms" OnCheckedChanged="chkWinlink_CheckedChanged" AutoPostBack="True" />
+                                <asp:CustomValidator ID="validatorSelectOne" runat="server" ErrorMessage="You must select at least one data set." OnServerValidate="validatorSelectOne_ServerValidate" ValidateEmptyText="True" ForeColor="#CC3300">*</asp:CustomValidator>
                             <asp:Panel ID="pnlWinlink" runat="server" Visible="false">
                                 <label>Report recipient's callsign:</label><asp:TextBox ID="txtRecipient" runat="server"></asp:TextBox>
-                                <asp:CustomValidator ID="validatorRecipientCallsign" runat="server" ErrorMessage="CustomValidator" OnServerValidate="validatorRecipientCallsign_ServerValidate" ValidateEmptyText="True" ForeColor="#CC3300">*</asp:CustomValidator>
+                                <asp:CustomValidator ID="validatorRecipientCallsign" runat="server" ErrorMessage="You checked the box to include Winlink data, but you didn't specifiy a recipient whose reports should be displayed." OnServerValidate="validatorRecipientCallsign_ServerValidate" ValidateEmptyText="True" ForeColor="#CC3300">*</asp:CustomValidator>
                                 <br />
                             </asp:Panel>
                         </li>
@@ -95,9 +119,14 @@
                         </li>
                     </ul>
                 </li>
-                <li><asp:Button ID="btnGenerate" runat="server" Text="Click here to generate and download your KML file" OnClick="btnGenerate_Click" /></li>
-                <li>Open the KML file.&nbsp; This should open Google Earth and display the data. You can share this with others who want to view the same data.</li>
+                <li><asp:Button ID="btnGenerate" runat="server" Text="Generate KML and link" OnClick="btnGenerate_Click" /></li>
+                <li><asp:Button ID="btnDownload" runat="server" Enabled="False" OnClick="btnDownload_Click" Text="Download KML file" /></li>
+                <li>Open the <abbr title="Keyhole Markup Language: A standard file format used to display geographic data in an Earth browser such as Google Earth.">KML</abbr> file.&nbsp; This should open Google Earth and display the data. (If nothing displays, it&#39;s possible that there is no data available yet.)</li>
             </ol>
+            <asp:Panel ID="pnlActions" runat="server" Visible="false">
+                <br />
+                <asp:Button ID="btnUrl" runat="server" Text="Click here to copy a link you can share with others who want to view this same data set" UseSubmitBehavior="False" />
+            </asp:Panel>
         </div>
     </form>
 </body>

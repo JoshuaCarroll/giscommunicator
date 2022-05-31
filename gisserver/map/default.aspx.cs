@@ -11,11 +11,63 @@ namespace gisserver.map
 {
     public partial class _default : System.Web.UI.Page
     {
+        string thisServer;
+        Parameters parameters;
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            thisServer = HttpContext.Current.Request.Url.AbsoluteUri;
+            thisServer = thisServer.Substring(0, thisServer.LastIndexOf(HttpContext.Current.Request.Url.AbsolutePath));
+
             if (!this.IsPostBack)
             {
-                LoadActiveNets();
+                string strP = Request.QueryString["p"];
+
+                if (strP != null && strP != "")
+                {
+                    parameters = Parameters.FromString(strP);
+
+                    chkNetlogger.Checked = parameters.Netlogger;
+                    pnlNetlogger.Visible = parameters.Netlogger;
+                    if (parameters.Netlogger)
+                    {
+                        ddlActiveNets.Items.Clear();
+                        ddlActiveNets.Items.Add(parameters.NetloggerNetName);
+                    }
+
+                    chkWeather.Checked = parameters.Weather;
+                    pnlWeather.Visible = parameters.Weather;
+                    if (parameters.Weather)
+                    {
+                        ddlStates.Items.Clear();
+                        ddlStates.Items.Add(parameters.WeatherState);
+                    }
+
+                    chkWinlink.Checked = parameters.Winlink;
+                    pnlWinlink.Visible = parameters.Winlink;
+                    if (parameters.Winlink)
+                    {
+                        txtRecipient.Text = parameters.WinlinkRecipient;
+                    }
+                    string url = thisServer + "/map/?p=" + parameters.ToString();
+                    btnUrl.OnClientClick = "javascript:copyToClipboard('" + url + "', this);return false;";
+
+                    lblInstructions.Text = "Review the options below that were already selected for you:";
+
+                    chkNetlogger.Enabled = false;
+                    chkWeather.Enabled = false;
+                    chkWinlink.Enabled = false;
+                    txtRecipient.Enabled = false;
+                    ddlActiveNets.Enabled = false;
+                    ddlStates.Enabled = false;
+                    btnGenerate.Enabled = false;
+                    btnDownload.Enabled = true;
+                    pnlActions.Visible = true;
+                }
+                else
+                {
+                    LoadActiveNets();
+                }
             }
         }
 
@@ -102,9 +154,6 @@ namespace gisserver.map
         {
             if (this.IsValid)
             {
-                string thisServer = HttpContext.Current.Request.Url.AbsoluteUri;
-                thisServer = thisServer.Substring(0, thisServer.LastIndexOf(HttpContext.Current.Request.Url.AbsolutePath));
-
                 Parameters p = new Parameters();
                 p.Winlink = chkWinlink.Checked;
                 p.Weather = chkWeather.Checked;
@@ -124,26 +173,33 @@ namespace gisserver.map
                     int length = p.NetloggerUrl.IndexOf("&") - start;
                     p.NetloggerServer = p.NetloggerUrl.Substring(start, length);
                 }
-                p.ToString();
 
-                string filename = "";
-                if (p.Winlink)
-                    filename += p.WinlinkRecipient.Trim().Replace(" ","").Replace(',','_') + "-";
-                if (p.Weather)
-                    filename += p.WeatherState.Trim() + "-";
-                if (p.Netlogger)
+                Response.Redirect("/map/?p=" + p.ToString());
+            }
+        }
+
+        protected void btnDownload_Click(object sender, EventArgs e)
+        {
+            Parameters p = Parameters.FromString(Request.QueryString["p"]);
+
+            string filename = "";
+            if (p.Winlink)
+                filename += p.WinlinkRecipient.Trim().Replace(" ", "").Replace(',', '_') + "-";
+            if (p.Weather)
+                filename += p.WeatherState.Trim() + "-";
+            if (p.Netlogger)
+            {
+                if (p.NetloggerNetName.Length > 15)
                 {
-                    if (p.NetloggerNetName.Length > 15)
-                    {
-                        filename += p.NetloggerNetName.Trim().Substring(0, 15);
-                    }
-                    else
-                    {
-                        filename += p.NetloggerNetName.Trim();
-                    }
+                    filename += p.NetloggerNetName.Trim().Substring(0, 15);
                 }
+                else
+                {
+                    filename += p.NetloggerNetName.Trim();
+                }
+            }
 
-                string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+            string kml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <kml xmlns=""http://www.opengis.net/kml/2.2"" xmlns:gx=""http://www.google.com/kml/ext/2.2"" xmlns:kml=""http://www.opengis.net/kml/2.2"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 <Document>
     <name>" + filename + @"</name>
@@ -170,11 +226,22 @@ namespace gisserver.map
 </Document>
 </kml> ";
 
-                Response.Clear();
-                Response.ContentType = "application/vnd.google-earth.kml+xml";
-                Response.AddHeader("content-disposition", "attachment;    filename=" + filename + ".kml");
-                Response.Write(kml);
-                Response.End();
+            Response.Clear();
+            Response.ContentType = "application/vnd.google-earth.kml+xml";
+            Response.AddHeader("content-disposition", "attachment;    filename=" + filename + ".kml");
+            Response.Write(kml);
+            Response.End();
+        }
+
+        protected void validatorSelectOne_ServerValidate(object source, ServerValidateEventArgs args)
+        {
+            if (!chkNetlogger.Checked && !chkWeather.Checked && !chkWinlink.Checked)
+            {
+                args.IsValid = false;
+            }
+            else
+            {
+                args.IsValid = true;
             }
         }
     }
