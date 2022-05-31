@@ -35,14 +35,14 @@
             copyToClipboard_originalText = obj.innerText;
             copyToClipboard_caller = obj;
 
-            obj.innerText = "URL copied to your clipboard!";
+            obj.value = "URL copied to your clipboard!";
             obj.style.backgroundColor = "#eff404";
             
             setTimeout(copyToClipboard_done, 2000);
         }
 
         function copyToClipboard_done() {
-            copyToClipboard_caller.innerText = copyToClipboard_originalText;
+            copyToClipboard_caller.value = copyToClipboard_originalText;
             copyToClipboard_caller.style.backgroundColor = "";
             copyToClipboard_caller = null;
             copyToClipboard_originalText = null;
