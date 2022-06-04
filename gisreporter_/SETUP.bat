@@ -6,7 +6,7 @@ echo.
 set /P callsign=What is the callsign that will receive messages? 
 echo echo off > RUN.BAT
 echo cls >> RUN.BAT
-echo dotnet gisreporter.dll "C:\RMS Express\%callsign%\Messages" >> RUN.BAT
+echo dotnet gisreporter_.dll "C:\RMS Express\%callsign%\Messages" >> RUN.BAT
 echo echo. >> RUN.BAT
 echo echo  ************************************************************ >> RUN.BAT
 echo echo  *                                                          * >> RUN.BAT
