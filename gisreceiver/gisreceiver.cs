@@ -28,14 +28,26 @@ namespace gisreceiver
                 using (SqlConnection Connection = new SqlConnection(connectionString))
                 {
                     Connection.Open();
-                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient;";
+                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient @FormData;";
+
+                    int mapItemCount = 0;
+                    string mapItemLastUid = "";
 
                     foreach (MapItem mapItem in mapItems)
                     {
-                        if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
+                        mapItemCount = mapItemCount++;
+                        try
                         {
-                            SqlCommand cmd = new SqlCommand(strSql, Connection);
-                            CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient);
+                            mapItemLastUid = mapItem.UniqueID;
+                            if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
+                            {
+                                SqlCommand cmd = new SqlCommand(strSql, Connection);
+                                CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogError("** " + mapItemCount.ToString() + "|" + mapItemLastUid + " " + ex);
                         }
                     }
                     Connection.Close();
@@ -74,7 +86,7 @@ namespace gisreceiver
             }
         }
 
-        public static void CreateMapItemRecord(SqlCommand cmd, string DataSet, string UID, string Latitude, string Longitude, string LocationDescription, string Name, string Description, string Icon, string ReportedDateTime, string Recipient)
+        public static void CreateMapItemRecord(SqlCommand cmd, string DataSet, string UID, string Latitude, string Longitude, string LocationDescription, string Name, string Description, string Icon, string ReportedDateTime, string Recipient, string FormData)
         {
             cmd.Parameters.AddWithValue("@DataSet", DataSet);
             cmd.Parameters.AddWithValue("@UID", UID);
@@ -86,6 +98,7 @@ namespace gisreceiver
             cmd.Parameters.AddWithValue("@Icon", Icon);
             cmd.Parameters.AddWithValue("@ReportedDateTime", ReportedDateTime);
             cmd.Parameters.AddWithValue("@Recipient", Recipient);
+            cmd.Parameters.AddWithValue("@FormData", FormData);
             cmd.ExecuteNonQuery();
         }
     }

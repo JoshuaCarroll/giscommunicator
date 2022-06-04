@@ -12,8 +12,9 @@ namespace gisreporter_
         public string ReportedDateTime { get; set; }
         public string UniqueID { get; set; }
         public string Recipient { get; set; }
+        public string FormData { get; set; }
 
-        public MapItem(string name, string description, string locationLatitude, string locationLongitude, string locationDescription, string icon, string reportedDateTime, string uniqueid, string recipient)
+        public MapItem(string name, string description, string locationLatitude, string locationLongitude, string locationDescription, string icon, string reportedDateTime, string uniqueid, string recipient, string formData)
         {
             Name = name;
             Description = description;
@@ -24,6 +25,7 @@ namespace gisreporter_
             ReportedDateTime = reportedDateTime;
             UniqueID = uniqueid;
             Recipient = recipient;
+            FormData = formData;
         }
     }
 }
