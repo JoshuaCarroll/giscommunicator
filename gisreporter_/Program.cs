@@ -20,7 +20,7 @@ namespace gisreporter_
 
         static void Main(string[] args)
         {
-            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
+            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(365, 0, 0, 0));
 
             Console.Write(@"
 /-------------------------------------------------------------------------\

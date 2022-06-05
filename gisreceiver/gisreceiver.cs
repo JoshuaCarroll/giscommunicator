@@ -28,7 +28,7 @@ namespace gisreceiver
                 using (SqlConnection Connection = new SqlConnection(connectionString))
                 {
                     Connection.Open();
-                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient @FormData;";
+                    string strSql = "exec dbo.spCreateMapItem @DataSet, @UID, @Latitude, @Longitude, @LocationDescription, @Name, @Description, @Icon, @ReportedDateTime, @Recipient, @FormData;";
 
                     int mapItemCount = 0;
                     string mapItemLastUid = "";
@@ -38,7 +38,8 @@ namespace gisreceiver
                         mapItemCount = mapItemCount++;
                         try
                         {
-                            mapItemLastUid = mapItem.UniqueID;
+                            log.LogInformation(string.Format("exec dbo.spCreateMapItem '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}';", '1', mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData));
+
                             if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                             {
                                 SqlCommand cmd = new SqlCommand(strSql, Connection);
@@ -88,6 +89,7 @@ namespace gisreceiver
 
         public static void CreateMapItemRecord(SqlCommand cmd, string DataSet, string UID, string Latitude, string Longitude, string LocationDescription, string Name, string Description, string Icon, string ReportedDateTime, string Recipient, string FormData)
         {
+            
             cmd.Parameters.AddWithValue("@DataSet", DataSet);
             cmd.Parameters.AddWithValue("@UID", UID);
             cmd.Parameters.AddWithValue("@Latitude", Latitude);
