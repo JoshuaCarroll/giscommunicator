@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using gisreporter_;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace gisreceiver
 {
@@ -23,6 +24,7 @@ namespace gisreceiver
 
             if (json != String.Empty)
             {
+                //log.LogInformation(json);
                 MapItem[] mapItems = JsonConvert.DeserializeObject<MapItem[]>(json);
 
                 using (SqlConnection Connection = new SqlConnection(connectionString))
@@ -32,24 +34,27 @@ namespace gisreceiver
 
                     int mapItemCount = 0;
                     string mapItemLastUid = "";
+                    string lastSql = "";
 
                     foreach (MapItem mapItem in mapItems)
                     {
                         mapItemCount = mapItemCount++;
                         try
                         {
-                            //log.LogInformation(string.Format("exec dbo.spCreateMapItem '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}';", '1', mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData));
-
                             if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                             {
                                 mapItem.GetIconFromXml(mapItem.FormData);
+                                log.LogInformation("Icon: " + mapItem.Icon);
+
                                 SqlCommand cmd = new SqlCommand(strSql, Connection);
+                                lastSql = string.Format("exec dbo.spCreateMapItem '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}';", '1', mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData);
                                 CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData);
                             }
                         }
                         catch (Exception ex)
                         {
                             log.LogError("** " + mapItemCount.ToString() + "|" + mapItemLastUid + " " + ex);
+                            log.LogInformation(lastSql);
                         }
                     }
                     Connection.Close();
@@ -64,7 +69,6 @@ namespace gisreceiver
                 try
                 {
                     string recipient = req.Query["recipient"];
-                    log.LogInformation("recipient: " + recipient);
                     string kml = "";
                     using (SqlConnection Connection = new SqlConnection(connectionString))
                     {
@@ -101,7 +105,9 @@ namespace gisreceiver
             cmd.Parameters.AddWithValue("@Icon", Icon);
             cmd.Parameters.AddWithValue("@ReportedDateTime", ReportedDateTime);
             cmd.Parameters.AddWithValue("@Recipient", Recipient);
-            cmd.Parameters.AddWithValue("@FormData", FormData);
+
+            // Remove the UTF-8 declaration (confuses the hell out of SQL which requires UTF-16)
+            cmd.Parameters.AddWithValue("@FormData", FormData.Replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>",""));
             cmd.ExecuteNonQuery();
         }
     }
