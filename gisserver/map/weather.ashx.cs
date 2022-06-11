@@ -186,7 +186,7 @@ namespace gisserver.map
                             kml += @"
                             <Placemark>
                                 <name>" + name + @"</name>
-                                <styleUrl>#examplePolyStyle</styleUrl>
+                                <styleUrl>#" + name.ToUpper().Replace(" ", "") + @"</styleUrl>
                                 <description><![CDATA[
                                     " + description + @"
                                 ]]></description>

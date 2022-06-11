@@ -43,7 +43,7 @@ namespace gisreceiver
                         {
                             if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                             {
-                                mapItem.GetIconFromXml(mapItem.FormData);
+                                log.LogInformation(mapItem.GetIconFromXml(mapItem.FormData));
                                 log.LogInformation("Icon: " + mapItem.Icon);
 
                                 SqlCommand cmd = new SqlCommand(strSql, Connection);

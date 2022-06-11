@@ -29,9 +29,8 @@ namespace gisreporter_
             FormData = formData;
         }
 
-        public void GetIconFromXml(string formData)
+        public string GetIconFromXml(string formData)
         {
-            #region Determine the icon to use
             XmlDocument document = new XmlDocument();
             document.LoadXml(formData);
             XmlNamespaceManager mgr = new XmlNamespaceManager(document.NameTable);
@@ -44,6 +43,7 @@ namespace gisreporter_
             switch (display_form)
             {
                 case "Field Situation Report_viewer.html":
+                case "Field Situation Report_viewer":
                     if (variables.SelectSingleNode("safetyneed").InnerText == "YES")
                     {
                         Icon = "emergency-2.png";
@@ -87,6 +87,7 @@ namespace gisreporter_
 
                     break;
                 case "Severe WX Report viewer.html":
+                case "Severe WX Report viewer":
                     if (variables.SelectSingleNode("tornado").InnerText != "NONE")
                     {
                         Icon = "tornado.png";
@@ -122,9 +123,11 @@ namespace gisreporter_
 
                     break;
                 case "Local Weather Report Viewer.html":
+                case "Local Weather Report Viewer":
                     Icon = "cloudy.png";
                     break;
                 case "Winlink_Check_In_Viewer.html":
+                case "Winlink_Check_In_Viewer":
                     Icon = "person.png";
                     break;
                 default:
@@ -132,7 +135,7 @@ namespace gisreporter_
                     break;
             }
 
-            #endregion
+            return Icon;
         }
     }
 }
