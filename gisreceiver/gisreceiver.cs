@@ -38,10 +38,11 @@ namespace gisreceiver
                         mapItemCount = mapItemCount++;
                         try
                         {
-                            log.LogInformation(string.Format("exec dbo.spCreateMapItem '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}';", '1', mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData));
+                            //log.LogInformation(string.Format("exec dbo.spCreateMapItem '{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}';", '1', mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData));
 
                             if (mapItem.LocationLatitude != null && mapItem.LocationLatitude != "" && mapItem.LocationLongitude != null && mapItem.LocationLongitude != "")
                             {
+                                mapItem.GetIconFromXml(mapItem.FormData);
                                 SqlCommand cmd = new SqlCommand(strSql, Connection);
                                 CreateMapItemRecord(cmd, "1", mapItem.UniqueID, mapItem.LocationLatitude, mapItem.LocationLongitude, mapItem.LocationDescription, mapItem.Name, mapItem.Description, mapItem.Icon, mapItem.ReportedDateTime, mapItem.Recipient, mapItem.FormData);
                             }
