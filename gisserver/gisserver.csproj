@@ -63,7 +63,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="map\default.ashx" />
     <Content Include="map\map.kml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -100,9 +99,6 @@
     <Compile Include="map\checkins.ashx.cs">
       <DependentUpon>checkins.ashx</DependentUpon>
     </Compile>
-    <Compile Include="map\default.ashx.cs">
-      <DependentUpon>default.ashx</DependentUpon>
-    </Compile>
     <Compile Include="map\default.aspx.cs">
       <DependentUpon>default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -117,6 +113,7 @@
       <DependentUpon>weather.ashx</DependentUpon>
     </Compile>
     <Compile Include="Parameters.cs" />
+    <Compile Include="PrivateVariables.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
