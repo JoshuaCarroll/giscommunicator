@@ -132,33 +132,6 @@ namespace gisserver.map
         protected global::System.Web.UI.WebControls.CheckBox chkWeather;
 
         /// <summary>
-        /// pnlWeather control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlWeather;
-
-        /// <summary>
-        /// ddlStates control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlStates;
-
-        /// <summary>
-        /// validatorWeather control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.CustomValidator validatorWeather;
-
-        /// <summary>
         /// btnGenerate control.
         /// </summary>
         /// <remarks>

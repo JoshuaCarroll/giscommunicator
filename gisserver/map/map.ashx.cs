@@ -69,7 +69,7 @@ namespace gisserver.map
 
                 if (p.Weather)
                 {
-                    kml += "<NetworkLink><name>" + p.WeatherState + @" Weather</name>
+                    kml += @"<NetworkLink><name>Weather alerts</name>
 	<open>0</open><description></description>
 	<Link>";
                     kml += String.Format("<href>{0}/map/weather.ashx?p={1}</href>", thisServer, strP);

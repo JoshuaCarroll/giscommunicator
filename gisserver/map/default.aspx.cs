@@ -36,12 +36,6 @@ namespace gisserver.map
                     }
 
                     chkWeather.Checked = parameters.Weather;
-                    pnlWeather.Visible = parameters.Weather;
-                    if (parameters.Weather)
-                    {
-                        ddlStates.Items.Clear();
-                        ddlStates.Items.Add(parameters.WeatherState);
-                    }
 
                     chkWinlink.Checked = parameters.Winlink;
                     pnlWinlink.Visible = parameters.Winlink;
@@ -59,7 +53,6 @@ namespace gisserver.map
                     chkWinlink.Enabled = false;
                     txtRecipient.Enabled = false;
                     ddlActiveNets.Enabled = false;
-                    ddlStates.Enabled = false;
                     btnGenerate.Enabled = false;
                     btnDownload.Enabled = true;
                     pnlActions.Visible = true;
@@ -93,10 +86,6 @@ namespace gisserver.map
         protected void chkNetlogger_CheckedChanged(object sender, EventArgs e)
         {
             pnlNetlogger.Visible = chkNetlogger.Checked;
-        }
-        protected void chkWeather_CheckedChanged(object sender, EventArgs e)
-        {
-            pnlWeather.Visible = chkWeather.Checked;
         }
 
         protected void validatorRecipientCallsign_ServerValidate(object source, ServerValidateEventArgs args)
@@ -133,23 +122,6 @@ namespace gisserver.map
             }
         }
 
-        protected void validatorWeather_ServerValidate(object source, ServerValidateEventArgs args)
-        {
-            args.IsValid = false;
-
-            if (chkWeather.Checked)
-            {
-                if (ddlStates.SelectedValue != string.Empty)
-                {
-                    args.IsValid = true;
-                }
-            }
-            else
-            {
-                args.IsValid = true;
-            }
-        }
-
         protected void btnGenerate_Click(object sender, EventArgs e)
         {
             if (this.IsValid)
@@ -161,9 +133,6 @@ namespace gisserver.map
 
                 if (p.Winlink)
                     p.WinlinkRecipient = txtRecipient.Text;
-
-                if (p.Weather)
-                    p.WeatherState = ddlStates.SelectedValue;
 
                 if (p.Netlogger)
                 {
@@ -186,7 +155,7 @@ namespace gisserver.map
             if (p.Winlink)
                 filename += p.WinlinkRecipient.Trim().Replace(" ", "").Replace(',', '_') + "-";
             if (p.Weather)
-                filename += p.WeatherState.Trim() + "-";
+                filename += "Wx-";
             if (p.Netlogger)
             {
                 if (p.NetloggerNetName.Length > 15)
@@ -207,7 +176,6 @@ namespace gisserver.map
     <NetworkLink>
 	    <name>AA5JC SitRep</name>
 	    <open>1</open>
-	    <description>Needed to ensure recovery in case of internet outage.</description>
 	    <LookAt>
 		    <longitude>-92.10432730888137</longitude>
 		    <latitude>34.82677287952281</latitude>

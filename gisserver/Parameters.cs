@@ -12,7 +12,6 @@ namespace gisserver
         public bool Weather { get; set; }
         public bool Netlogger { get; set; }
         public string WinlinkRecipient { get; set; }
-        public string WeatherState { get; set; }
         public string NetloggerNetName { get; set; }
         public string NetloggerUrl { get; set; }
         public string NetloggerServer { get; set; }
