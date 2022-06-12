@@ -169,7 +169,7 @@ namespace gisserver.map
                 {
                     using (WebClient wc = new WebClient())
                     {
-                        wc.Headers.Add("User-Agent", "AA5JC SitRep, joshcarroll21 at googles mail service)");
+                        wc.Headers.Add("User-Agent", "AA5JC SitRep, " + PrivateVariables.PointOfContactEmail + ")");
                         strJson = wc.DownloadString("https://api.weather.gov/alerts/active");
 
                         // Cache this for all users every N minutes
