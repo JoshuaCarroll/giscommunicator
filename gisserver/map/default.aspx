@@ -17,6 +17,16 @@
         a, a:active, a:visited {
             color: #04f7ff;
         }
+
+        .screenshot {
+            height: 275px;
+            margin: 10px;
+            border: 1px solid #bfbfbf;
+        }
+
+        #btnUrl {
+            margin-left: 40px;
+        }
     </style>
 	<script type="text/javascript">
 
@@ -27,7 +37,7 @@
         function copyToClipboard(copyText, obj) {
             navigator.clipboard.writeText(copyText);
 
-            copyToClipboard_originalText = obj.innerText;
+            copyToClipboard_originalText = obj.value;
             copyToClipboard_caller = obj;
 
             obj.value = "URL copied to your clipboard!";
@@ -50,7 +60,10 @@
         <div>
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" Font-Bold="True" ForeColor="#FF3300" />
             <p>
-                <img alt="Screenshot of the sit rep map." src="../screenshot.jpg" align="right" />By following the steps below you will be able to view the data selected on a map.&nbsp; The primary purpose of this tool is to provide government and agency leaders with actionable infomation they need to make decisions.&nbsp; This situational awareness map will show relevant icons representing the item plotted, ensuring that leaders can glance at the map and know what it happening in their area of concern.</p>
+                <img alt="Screenshot of the sit rep map." src="../screenshot.jpg" align="right" class="screenshot" />The primary purpose of this tool is to provide government and agency leaders with actionable infomation they need to make decisions.&nbsp; This situational awareness map will show relevant icons representing the item plotted, ensuring that leaders can glance at the map and know what it happening in their area of concern.&nbsp; By following the steps below, you will be able to view the data selected on a map.</p>
+            <p>
+                Your map will automatically refresh its data at set intervals.&nbsp; Once you download your KML file, you won&#39;t need to download a new one ever again unless you need to change the settings selected below.</p>
+            <hr />
             <ol>
                 <li>Install Google Earth, available at <a target="_blank" href="https://www.google.com/earth/about/versions/?gl=US&hl=en#download-pro">https://www.google.com/earth/</a></li>
                 <li>
