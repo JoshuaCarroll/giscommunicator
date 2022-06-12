@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Web;
+using System.Web.Caching;
 using System.Xml.Linq;
 
 namespace gisserver.map
@@ -161,10 +162,19 @@ namespace gisserver.map
                 Parameters p = Parameters.FromString(strP);
 
                 string strJson = "";
-                using (WebClient wc = new WebClient())
+
+                Cache cache = new Cache();
+                strJson = (string)cache["wxJson"];
+                if (strJson == null)
                 {
-                    wc.Headers.Add("User-Agent", "AA5JC SitRep, joshcarroll21@gmail.com)");
-                    strJson = wc.DownloadString(string.Format("https://api.weather.gov/alerts/active?area={0}", p.WeatherState));
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.Headers.Add("User-Agent", "AA5JC SitRep, joshcarroll21 at googles mail service)");
+                        strJson = wc.DownloadString("https://api.weather.gov/alerts/active");
+
+                        // Cache this for all users every N minutes
+                        cache.Insert("wxJson", strJson, null, Cache.NoAbsoluteExpiration, new TimeSpan(0, 1, 0));
+                    }
                 }
 
                 JObject wx = JObject.Parse(strJson);
