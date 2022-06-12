@@ -5,22 +5,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>AA5JC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap" rel="stylesheet" />
     <style type="text/css">
-        @font-face {
-            font-family: 'LCARS';
-            src: url('/lcarssdk/fonts/antonio-bold-webfont.eot');
-            src: url('/lcarssdk/fonts/antonio-bold-webfont.eot?#iefix') format('embedded-opentype'),
-                 url('/lcarssdk/fonts/antonio-bold-webfont.woff2') format('woff2'),
-                 url('/lcarssdk/fonts/antonio-bold-webfont.woff') format('woff'),
-                 url('/lcarssdk/fonts/Antonio-Bold.ttf') format('truetype'),
-                 url('/lcarssdk/fonts/antonio-bold-webfont.svg#antoniobold') format('svg');
-            font-weight: normal;
-            font-style: normal;
-        }
-
         body {
             background-color: #000000;
             color: #ffffff;
+            font-family: Antonio;
+        }
+        a, a:active, a:visited {
+            color: #04f7ff;
         }
     </style>
 	<script type="text/javascript">
@@ -53,7 +48,9 @@
     <h1>AA5JC SitRep Map</h1>
     <form id="form1" runat="server">
         <div>
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" Font-Bold="True" ForeColor="#CC3300" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" Font-Bold="True" ForeColor="#FF3300" />
+            <p>
+                <img alt="Screenshot of the sit rep map." src="../screenshot.jpg" align="right" />By following the steps below you will be able to view the data selected on a map.&nbsp; The primary purpose of this tool is to provide government and agency leaders with actionable infomation they need to make decisions.&nbsp; This situational awareness map will show relevant icons representing the item plotted, ensuring that leaders can glance at the map and know what it happening in their area of concern.</p>
             <ol>
                 <li>Install Google Earth, available at <a target="_blank" href="https://www.google.com/earth/about/versions/?gl=US&hl=en#download-pro">https://www.google.com/earth/</a></li>
                 <li>
