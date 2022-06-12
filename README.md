@@ -1,7 +1,6 @@
 [![forthebadge](https://forthebadge.com/images/badges/powered-by-electricity.svg)](https://forthebadge.com)
-![image](https://user-images.githubusercontent.com/2617394/173254979-f94ed80a-d654-43a4-8281-7d83e5c4b707.png)
-
-
+[![image](https://user-images.githubusercontent.com/2617394/173255052-2d3576b1-889c-42af-98c7-786509a4f5a1.png)](https://forthebadge.com)
+[![image](https://user-images.githubusercontent.com/2617394/173255113-80294590-a303-4e39-b765-3ebdfe51fbbc.png)](https://forthebadge.com)
 
 # GIS Communicator
 
