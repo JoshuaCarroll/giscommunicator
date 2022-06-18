@@ -47,7 +47,7 @@ namespace gisserver.map
 	<open>0</open>
 	<description>Amateur radio messages and forms</description>
 	<Link>";
-                    kml += String.Format("<href>{0}recipient={1}</href>", PrivateVariables.FunctionAppUrl, p.WinlinkRecipient);
+                    kml += String.Format("<href>{0}&amp;recipient={1}</href>", PrivateVariables.FunctionAppUrl, p.WinlinkRecipient);
                     kml += @"			<refreshMode>onInterval</refreshMode>
 			<refreshInterval>180</refreshInterval>
 		</Link>
