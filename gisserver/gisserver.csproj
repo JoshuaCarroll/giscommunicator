@@ -69,6 +69,8 @@
     <Content Include="map\map.ashx" />
     <Content Include="map\checkins.ashx" />
     <Content Include="map\weather.ashx" />
+    <Content Include="map\gisreporter\gisreporterversion.ashx" />
+    <Content Include="map\gisreporter\release\Web.config" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Properties\PublishProfiles\FTPProfile.pubxml" />
@@ -108,6 +110,10 @@
     </Compile>
     <Compile Include="map\default.aspx.designer.cs">
       <DependentUpon>default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="map\gisreporter\gisReporterPackage.cs" />
+    <Compile Include="map\gisreporter\gisreporterversion.ashx.cs">
+      <DependentUpon>gisreporterversion.ashx</DependentUpon>
     </Compile>
     <Compile Include="map\map.ashx.cs">
       <DependentUpon>map.ashx</DependentUpon>

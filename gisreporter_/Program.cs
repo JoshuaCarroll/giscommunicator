@@ -3,30 +3,40 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Text.Json;
 using System.Text;
+using gisserver.map.gisreporter;
+using System.Reflection;
 
 namespace gisreporter_
 {
     class Program
     {
-        private static string gisReceiverUrl = "https://giscommunicator.azurewebsites.net/api/gisreceiver?code=xNjuM3fBnIsZ28iTEiUNbFQcmBEdPkp5aspqxVm1aaJ6cGItH4dcyQ==";
+        private static string gisReceiverUrl = gisserver.PrivateVariables.FunctionAppUrl;
 
         private static List<MapItem> mapItems = new List<MapItem>();
-        private static Timer timer = new Timer();
         private static bool continueRunning = true;
         private static DateTime lastMessageReceived;
+        private static int numberOfTimerCycles = 0;
+        private static bool updateIsAvailable = false;
 
         static void Main(string[] args)
         {
             lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(365, 0, 0, 0));
 
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string tempFile = currentDirectory + "\\finishupdate.bat";
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+                changeLine(currentDirectory + "\\run.bat", "pause", 13);
+            }
+
             Console.Write(@"
 /-------------------------------------------------------------------------\
 |                               GIS Reporter                              |
 |                       by Joshua Carroll, AA5JC                          |
-\_________________________________________________________________________/                                                                         
+\_________________________________________________________________________/
 
 This program will monitor the folders specified for Winlink mapping/GIS reports. If a new
 message is received that contains mapping data, it will send the details of the report
@@ -42,8 +52,8 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
   - Example: /W ''C:\RMS Express\AA5JC\Messages'' ''C:\Paclink\Accounts\DELTA_Account''
 
 ");
-
-
+            
+            CheckForUpdates(true);
             CheckForNewData(args);
 
             Task t = Task.Run(async () => {
@@ -59,8 +69,15 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     }
                     while (i > 0);
                     Console.Write("\r                                                                 ");
-
+                    
                     CheckForNewData(args);
+
+                    numberOfTimerCycles = numberOfTimerCycles++;
+                    if (numberOfTimerCycles % 10 == 0)
+                    {
+                        CheckForUpdates(false);
+                    }
+
                 } while (continueRunning);
             });
             t.Wait();
@@ -109,7 +126,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 else
                 {
                     Console.WriteLine("** The Winlink folder you specified does not exist.");
-                    timer.Stop();
+                    continueRunning = false;
                 }
             }
         }
@@ -182,9 +199,121 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 else
                 {
                     Console.WriteLine("** The Winlink folder you specified does not exist.");
-                    timer.Stop();
+                    continueRunning = false;
+
                 }
             }
+        }
+
+        private static void CheckForUpdates(bool promptToInstall)
+        {
+
+            gisReporterPackage package;
+            gisReporterPackage oldPackage;
+
+            string baseUrl = "https://aa5jc.com/map/gisreporter/";
+            string currentDirectory = Directory.GetCurrentDirectory();
+
+            string oldPackageJson = currentDirectory + "\\package.json";
+            if (File.Exists(oldPackageJson))
+            {
+                string oldJson = File.ReadAllText(oldPackageJson);
+                oldPackage = JsonSerializer.Deserialize<gisReporterPackage>(oldJson);
+            }
+            else
+            {
+                oldPackage = new gisReporterPackage();
+                oldPackage.PublishDateUTC = new DateTime(1970, 1, 1);
+            }
+
+            using (WebClient wc = new WebClient())
+            {
+                string json = wc.DownloadString(baseUrl + "/gisreporterversion.ashx");
+                package = JsonSerializer.Deserialize<gisReporterPackage>(json);
+            }
+
+            if (package.PublishDateUTC > oldPackage.PublishDateUTC)
+            {
+                if (!promptToInstall)
+                {
+                    Console.Write(@"
+
+
+                *****************************
+
+                An updated version is available. Is is strongly recommended to update now.
+
+                Restart the console to update the GIS Reporter.
+                
+                *****************************
+
+
+                ?: ");
+                }
+                else
+                {
+                    // Download the updated files
+                    Console.Write(@"
+                *****************************
+
+                An updated version is available. Is is strongly recommended to update now.
+
+                Your version date: " + oldPackage.PublishDateUTC + @"
+                New version date: " + package.PublishDateUTC + @"
+
+                Proceed with the update? (Y/N)
+                
+                *****************************
+                ?: ");
+
+                    string input = Console.ReadLine();
+                    if (input.Trim().ToUpper() == "Y")
+                    {
+                        string srcDir = baseUrl + "\\release\\";
+                        string tgtDir = currentDirectory + "\\release";
+
+                        Directory.CreateDirectory(tgtDir);
+
+                        // Download the update
+                        using (var wc = new WebClient())
+                        {
+                            for (int i = 0; i < package.Files.Length; i++)
+                            {
+                                if (package.Files[i] != "")
+                                {
+                                    Console.WriteLine(baseUrl + package.Files[i]);
+                                    wc.DownloadFile(srcDir + package.Files[i], currentDirectory + "\\release\\" + package.Files[i]);
+                                }
+                            }
+                        }
+                        string updateFile = @"
+echo off
+cls
+echo Waiting for GIS Reporter to close. Please wait...
+timeout /t 1 /nobreak
+copy /Y " + currentDirectory + @"\release\*.* " + currentDirectory + @"
+del /Q " + currentDirectory + @"\release\*.*
+start " + currentDirectory + @"\\run.bat
+";
+                        File.WriteAllText(currentDirectory + "\\finishupdate.bat", updateFile);
+
+                        changeLine(currentDirectory + "\\run.bat", currentDirectory + "\\finishupdate.bat", 13);
+
+                        Environment.Exit(0);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("You have the most current version.");
+            }
+        }
+
+        private static void changeLine(string fileName, string newText, int line_to_edit)
+        {
+            string[] arrLine = File.ReadAllLines(fileName);
+            arrLine[line_to_edit - 1] = newText;
+            File.WriteAllLines(fileName, arrLine);
         }
     }
 }
