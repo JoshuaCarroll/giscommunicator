@@ -10,7 +10,7 @@ The GIS Communicator is a solution that will faciliate the creation of a situati
 
 ## GIS Reporter
 
-GIS Reporter will monitor for new Winlink or Paclink messages that contain forms.  Messages that do not contain mappable form data (don't have latitude and longitude) are ignored.  When new messages are received, the form data is sent to the GIS Receiver web service.  This is a console application that was written in C# on the Dotnet Core framework - meaning it can run on Windows, Mac, or Linux.
+GIS Reporter is the client program that will monitor for new Winlink or Paclink messages that contain forms.  Messages that do not contain mappable form data (don't have latitude and longitude) are ignored.  When new messages are received, the form data is sent to the GIS Receiver web service.  This is a console application that was written in C# on the Dotnet Core framework - meaning it can run on Windows, Mac, or Linux.
 
 ## GIS Receiver
 GIS Receiver is a web service made to receive and store the form data sent from GIS Reporter.  It will parse the data then store it in a database.  
