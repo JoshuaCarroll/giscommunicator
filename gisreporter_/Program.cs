@@ -7,13 +7,13 @@ using System.Text.Json;
 using System.Text;
 using gisserver.map.gisreporter;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace gisreporter_
 {
     class Program
     {
         private static string gisReceiverUrl = gisserver.PrivateVariables.FunctionAppUrl;
-
         private static List<MapItem> mapItems = new List<MapItem>();
         private static bool continueRunning = true;
         private static DateTime lastMessageReceived;
@@ -22,15 +22,7 @@ namespace gisreporter_
 
         static void Main(string[] args)
         {
-            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(365, 0, 0, 0));
-
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string tempFile = currentDirectory + "\\finishupdate.bat";
-            if (File.Exists(tempFile))
-            {
-                File.Delete(tempFile);
-                changeLine(currentDirectory + "\\run.bat", "pause", 13);
-            }
+            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
 
             Console.Write(@"
 /-------------------------------------------------------------------------\
@@ -42,7 +34,7 @@ This program will monitor the folders specified for Winlink mapping/GIS reports.
 message is received that contains mapping data, it will send the details of the report
 to a web service for consolidation.
 
-(To view the data, visit https://aa5jc.com/map)
+(To view the data, visit https://aa5jc.com and click the link for the SITREP MAP.)
 
 Usage: dotnet gisreporter.dll [file path to your messages folder]
   - Example: /W ''C:\RMS Express\AA5JC\Messages''
@@ -53,7 +45,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
 
 ");
             
-            CheckForUpdates(true);
+            CheckForUpdates(true, args);
             CheckForNewData(args);
 
             Task t = Task.Run(async () => {
@@ -75,7 +67,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     numberOfTimerCycles = numberOfTimerCycles++;
                     if (numberOfTimerCycles % 10 == 0)
                     {
-                        CheckForUpdates(false);
+                        CheckForUpdates(false, args);
                     }
 
                 } while (continueRunning);
@@ -138,32 +130,13 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 // Validate file path
                 if (Directory.Exists(path))
                 {
-                    // Get all files 
-                    string[] files = Directory.GetFiles(path, "*.mime");
-
-                    // Check each of these files to see if they are plotable and new
                     DateTime newestNewMessageReceived = lastMessageReceived;
 
-                    for (int i = 0; i < files.Length; i++)
-                    {
-                        if (File.GetLastWriteTime(files[i]) > lastMessageReceived)
-                        {
-                            if (newestNewMessageReceived < File.GetLastWriteTime(files[i]))
-                            {
-                                newestNewMessageReceived = File.GetLastWriteTime(files[i]);
-                            }
+                    string[] filesMime = Directory.GetFiles(path, "*.mime");
+                    newestNewMessageReceived = ProcessFiles(filesMime, newestNewMessageReceived);
 
-                            WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), Path.GetFileNameWithoutExtension(files[i]));
-
-                            if (msg.MessageXML != null && msg.MessageXML != string.Empty)
-                            {
-                                Console.WriteLine(String.Format("- {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
-                                MapItem mapItem = msg.ToMapItem();
-                                mapItems.Add(mapItem);
-                            }
-
-                        }
-                    }
+                    string[] filesBsf = Directory.GetFiles(path, "*.bsf");
+                    newestNewMessageReceived = ProcessFiles(filesBsf, newestNewMessageReceived);
 
                     lastMessageReceived = newestNewMessageReceived;
 
@@ -198,23 +171,53 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 }
                 else
                 {
-                    Console.WriteLine("** The Winlink folder you specified does not exist.");
+                    Console.WriteLine("** The mail folder you specified does not exist.");
                     continueRunning = false;
 
                 }
             }
         }
 
-        private static void CheckForUpdates(bool promptToInstall)
+        /// <summary>
+        /// Processes Winlink emails that contain attachments and parses them into an array for uploading
+        /// </summary>
+        /// <param name="files">String array containing full path filenames to the emails to process</param>
+        /// <param name="newestNewMessageReceived">Datetime representing the date and time of the most recently processed email</param>
+        /// <returns>Datetime representing the date and time of the most recently processed email</returns>
+        private static DateTime ProcessFiles(string[] files, DateTime newestNewMessageReceived)
         {
+            DateTime outputNewestNewMessageReceived = newestNewMessageReceived;
+            for (int i = 0; i < files.Length; i++)
+            {
+                if (File.GetLastWriteTime(files[i]) > lastMessageReceived)
+                {
+                    if (newestNewMessageReceived < File.GetLastWriteTime(files[i]))
+                    {
+                        newestNewMessageReceived = File.GetLastWriteTime(files[i]);
+                    }
 
+                    WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), Path.GetFileNameWithoutExtension(files[i]));
+
+                    if (msg.MessageXML != null && msg.MessageXML != string.Empty)
+                    {
+                        Console.WriteLine(String.Format("- {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
+                        MapItem mapItem = msg.ToMapItem();
+                        mapItems.Add(mapItem);
+                    }
+                }
+            }
+            return outputNewestNewMessageReceived;
+        }
+
+        private static void CheckForUpdates(bool promptToInstall, string[] programArgs)
+        {
             gisReporterPackage package;
             gisReporterPackage oldPackage;
 
             string baseUrl = "https://aa5jc.com/map/gisreporter/";
             string currentDirectory = Directory.GetCurrentDirectory();
 
-            string oldPackageJson = currentDirectory + "\\package.json";
+            string oldPackageJson = currentDirectory + Path.DirectorySeparatorChar + "package.json";
             if (File.Exists(oldPackageJson))
             {
                 string oldJson = File.ReadAllText(oldPackageJson);
@@ -232,8 +235,9 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 package = JsonSerializer.Deserialize<gisReporterPackage>(json);
             }
 
-            if (package.PublishDateUTC > oldPackage.PublishDateUTC)
+            if ((package.PublishDateUTC > oldPackage.PublishDateUTC) || updateIsAvailable)
             {
+                updateIsAvailable = true;
                 if (!promptToInstall)
                 {
                     Console.Write(@"
@@ -269,8 +273,8 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     string input = Console.ReadLine();
                     if (input.Trim().ToUpper() == "Y")
                     {
-                        string srcDir = baseUrl + "\\release\\";
-                        string tgtDir = currentDirectory + "\\release";
+                        string srcDir = baseUrl + Path.DirectorySeparatorChar + "release" + Path.DirectorySeparatorChar;
+                        string tgtDir = currentDirectory + Path.DirectorySeparatorChar + "release";
 
                         Directory.CreateDirectory(tgtDir);
 
@@ -282,22 +286,24 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                                 if (package.Files[i] != "")
                                 {
                                     Console.WriteLine(baseUrl + package.Files[i]);
-                                    wc.DownloadFile(srcDir + package.Files[i], currentDirectory + "\\release\\" + package.Files[i]);
+                                    wc.DownloadFile(srcDir + package.Files[i], currentDirectory + Path.DirectorySeparatorChar + "release" + Path.DirectorySeparatorChar + package.Files[i]);
                                 }
                             }
                         }
-                        string updateFile = @"
-echo off
-cls
-echo Waiting for GIS Reporter to close. Please wait...
-timeout /t 1 /nobreak
-copy /Y " + currentDirectory + @"\release\*.* " + currentDirectory + @"
-del /Q " + currentDirectory + @"\release\*.*
-start " + currentDirectory + @"\\run.bat
-";
-                        File.WriteAllText(currentDirectory + "\\finishupdate.bat", updateFile);
 
-                        changeLine(currentDirectory + "\\run.bat", currentDirectory + "\\finishupdate.bat", 13);
+                        string allProgramArgs = "";
+                        for (int i = 0; i < programArgs.Length; i++)
+                        {
+                            allProgramArgs += programArgs[i] + " ";
+                        }
+
+                        ProcessStartInfo startInfo = new ProcessStartInfo();
+                        startInfo.CreateNoWindow = false;
+                        startInfo.UseShellExecute = true;
+                        startInfo.FileName = "dotnet";
+                        startInfo.Arguments = String.Format("\"{0}{1}gisreporter_updater.dll\" \"{2}\" \"{0}\" \"{3}\" \"dotnet {4}{1}{5}.dll {6}\"", currentDirectory, Path.DirectorySeparatorChar, tgtDir, Process.GetCurrentProcess().Id, System.AppDomain.CurrentDomain.BaseDirectory, System.AppDomain.CurrentDomain.FriendlyName, allProgramArgs);
+                        startInfo.WindowStyle = ProcessWindowStyle.Normal;
+                        Process.Start(startInfo);
 
                         Environment.Exit(0);
                     }
@@ -307,13 +313,6 @@ start " + currentDirectory + @"\\run.bat
             {
                 Console.WriteLine("You have the most current version.");
             }
-        }
-
-        private static void changeLine(string fileName, string newText, int line_to_edit)
-        {
-            string[] arrLine = File.ReadAllLines(fileName);
-            arrLine[line_to_edit - 1] = newText;
-            File.WriteAllLines(fileName, arrLine);
         }
     }
 }

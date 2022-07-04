@@ -1,12 +1,18 @@
-﻿REM ** Editing this file?? Be sure to change the line number references in Program.cs if needed
-echo off
+﻿echo off
 cls
 echo.
 echo.
-set /P callsign=What is the callsign that will receive messages? 
+echo "Enter the full path to the folder(s) that contain your Winlink messages."
+echo "Multiple folders can be separated by a space. Be sure to wrap your paths"
+echo "in quotes."
+echo.
+echo "Default Winlink messages path:      C:\RMS Express\[[callsign]]\Messages"
+echo "Default Pat messages path (Linux)   /home/[[user]]/.local/share/pat/mailbox/[[callsign]]/in"
+echo.
+set /P folders=::  
 echo echo off > RUN.BAT
 echo cls >> RUN.BAT
-echo dotnet gisreporter_.dll "C:\RMS Express\%callsign%\Messages" >> RUN.BAT
+echo dotnet gisreporter_.dll %folders% >> RUN.BAT
 echo echo. >> RUN.BAT
 echo echo  ************************************************************ >> RUN.BAT
 echo echo  *                                                          * >> RUN.BAT
@@ -19,6 +25,6 @@ echo echo  ************************************************************ >> RUN.B
 echo pause >> RUN.BAT
 echo You can now run the program by executing RUN.BAT.
 echo.
-echo For instructions on how you can view the reports, visit https://aa5jc.com/map
+echo "For instructions on how you can view the reports, visit https://aa5jc.com/map"
 echo.
 pause

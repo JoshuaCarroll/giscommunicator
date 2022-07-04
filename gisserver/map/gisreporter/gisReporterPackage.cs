@@ -22,7 +22,7 @@ namespace gisserver.map.gisreporter
 
             for (int i = 0; i < p.Files.Length; i++)
             {
-                if (!p.Files[i].EndsWith("package.json"))
+                if ((!p.Files[i].EndsWith("package.json")) && (!Path.GetFileName(p.Files[i]).StartsWith("gisreporter_updater")))
                 {
                     DateTime lastModified = System.IO.File.GetLastWriteTimeUtc(p.Files[i]);
                     if (lastModified > p.PublishDateUTC)
@@ -38,15 +38,14 @@ namespace gisserver.map.gisreporter
         {
             for (int i = 0; i < Files.Length; i++)
             {
-                int lastSlash = Files[i].LastIndexOf(@"\");
-                if (lastSlash < 0) { lastSlash = 0; }
-                if (Files[i].EndsWith("\\Web.config"))
+                string filename = Path.GetFileName(Files[i]);
+                if ((filename == "Web.config") || (filename.StartsWith("gisreporter_updater")))
                 {
                     Files[i] = "";
                 }
                 else
                 {
-                    Files[i] = Files[i].Substring(lastSlash);
+                    Files[i] = filename;
                 }
             }
             return JsonConvert.SerializeObject(this);

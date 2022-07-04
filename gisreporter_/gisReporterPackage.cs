@@ -13,7 +13,7 @@ namespace gisserver.map.gisreporter
 
         public gisReporterPackage()
         {
-
+            folder = "";
         }
 
         public static gisReporterPackage Create(string folder)
@@ -21,6 +21,7 @@ namespace gisserver.map.gisreporter
             gisReporterPackage p = new gisReporterPackage();
             p.PublishDateUTC = DateTime.UtcNow.Subtract(new TimeSpan(36500, 0, 0, 0));
             p.Files = Directory.GetFiles(folder);
+            p.folder = folder;
 
             for (int i = 0; i < p.Files.Length; i++)
             {
