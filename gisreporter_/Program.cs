@@ -135,7 +135,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     string[] filesMime = Directory.GetFiles(path, "*.mime");
                     newestNewMessageReceived = ProcessFiles(filesMime, newestNewMessageReceived);
 
-                    string[] filesBsf = Directory.GetFiles(path, "*.bsf");
+                    string[] filesBsf = Directory.GetFiles(path, "*.b2f");
                     newestNewMessageReceived = ProcessFiles(filesBsf, newestNewMessageReceived);
 
                     lastMessageReceived = newestNewMessageReceived;
@@ -196,7 +196,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                         newestNewMessageReceived = File.GetLastWriteTime(files[i]);
                     }
 
-                    WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), Path.GetFileNameWithoutExtension(files[i]));
+                    WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), files[i]);
 
                     if (msg.MessageXML != null && msg.MessageXML != string.Empty)
                     {
