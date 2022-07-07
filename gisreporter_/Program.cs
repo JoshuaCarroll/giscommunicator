@@ -20,10 +20,11 @@ namespace gisreporter_
         private static DateTime lastMessageReceived;
         private static int numberOfTimerCycles = 0;
         private static bool updateIsAvailable = false;
-        public static double Version = 1.21;
+        public static double Version;
 
         static void Main(string[] args)
         {
+            Version = 1.21;
             lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
 
             Console.Write(@"
@@ -222,14 +223,15 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
             else
             {
                 // Get the json releases from Github
-                Github.ReleaseApi releaseApi;
+                Github.Release latestRelease;
                 using (WebClient wc = new WebClient())
                 {
-                    string json = wc.DownloadString("https://api.github.com/repos/JoshuaCarroll/giscommunicator/releases");
-                    releaseApi = JsonSerializer.Deserialize<Github.ReleaseApi>(json);
+                    wc.Headers.Add("user-agent", "GIS Communicator (GIS receiver)");
+                    string json = wc.DownloadString("https://api.github.com/repos/JoshuaCarroll/giscommunicator/releases/latest");
+                    latestRelease = JsonSerializer.Deserialize<Github.Release>(json);
                 }
 
-                string tag_name = releaseApi.Releases[0].tag_name;
+                string tag_name = latestRelease.tag_name;
                 if (tag_name.StartsWith("v", StringComparison.InvariantCultureIgnoreCase))
                 {
                     tag_name = tag_name.Substring(1);
@@ -254,8 +256,8 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
 
 An updated version is available. Is is strongly recommended to update now.
 
-Your version date: " + Version + @"
-New version date: " + latestVersion + @"
+Your version: " + Version + @"
+New version: " + latestVersion + @"
 
 Proceed with the update? (Y/N)
                 
@@ -267,9 +269,9 @@ Proceed with the update? (Y/N)
                         {
                             // Find the zip file
                             int zipfileAssetIndex = -1;
-                            for (int i = 0; i < releaseApi.Releases[0].assets.Count; i++)
+                            for (int i = 0; i < latestRelease.assets.Count; i++)
                             {
-                                if (releaseApi.Releases[0].assets[i].name.ToLower().EndsWith(".zip"))
+                                if (latestRelease.assets[i].name.ToLower().EndsWith(".zip"))
                                 {
                                     zipfileAssetIndex = i;
                                     break;
@@ -288,11 +290,11 @@ Proceed with the update? (Y/N)
                             // Download the new package
                             using (var wc = new WebClient())
                             {
-                                wc.DownloadFile(releaseApi.Releases[0].assets[zipfileAssetIndex].browser_download_url, tgtDir + Path.DirectorySeparatorChar + releaseApi.Releases[0].assets[zipfileAssetIndex].name);
+                                wc.DownloadFile(latestRelease.assets[zipfileAssetIndex].browser_download_url, tgtDir + Path.DirectorySeparatorChar + latestRelease.assets[zipfileAssetIndex].name);
                             }
 
                             // unzip file +++++
-                            ZipFile.ExtractToDirectory(tgtDir + Path.DirectorySeparatorChar + releaseApi.Releases[0].assets[zipfileAssetIndex].name, tgtDir);
+                            ZipFile.ExtractToDirectory(tgtDir + Path.DirectorySeparatorChar + latestRelease.assets[zipfileAssetIndex].name, tgtDir);
 
                             string allProgramArgs = "";
                             for (int i = 0; i < programArgs.Length; i++)
