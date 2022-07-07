@@ -17,15 +17,19 @@ namespace gisreporter_
         private static string gisReceiverUrl = gisserver.PrivateVariables.FunctionAppUrl;
         private static List<MapItem> mapItems = new List<MapItem>();
         private static bool continueRunning = true;
-        private static DateTime lastMessageReceived;
-        private static int numberOfTimerCycles = 0;
+        private static DateTime lastMessageCheck;
+        private static int numberOfTimerCycles;
         private static bool updateIsAvailable = false;
         public static double Version;
 
         static void Main(string[] args)
         {
-            Version = 1.21;
-            lastMessageReceived = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
+            Version = 1.24;
+
+
+            // Initialize global variables
+            lastMessageCheck = DateTime.Now.Subtract(new TimeSpan(30, 0, 0, 0));
+            numberOfTimerCycles = 1;
 
             Console.Write(@"
 /-------------------------------------------------------------------------\
@@ -52,13 +56,12 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
             
             CheckForUpdates(true, args);
             CheckForNewData(args);
+            
 
             Task t = Task.Run(async () => {
                 do
                 {
-                    Console.Write(string.Format("\r{0}                                      ", DateTime.Now.ToUniversalTime()));
-
-                    int i = 60;
+                    int i = 3; // Seconds of delay between message checks.
                     do
                     {
                         await Task.Delay(1000);
@@ -69,8 +72,8 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     
                     CheckForNewData(args);
 
-                    numberOfTimerCycles = numberOfTimerCycles++;
-                    if (numberOfTimerCycles % 10 == 0)
+                    numberOfTimerCycles = numberOfTimerCycles + 1;
+                    if (numberOfTimerCycles % 60 == 0)
                     {
                         CheckForUpdates(false, args);
                     }
@@ -88,46 +91,6 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
             }
         }
 
-        // This is not currently used.
-        private static void CheckWinlinkKml(string winlinkPath)
-        {
-            if (winlinkPath != string.Empty)
-            {
-                // Validate file path
-                if (Directory.Exists(winlinkPath))
-                {
-                    if (File.Exists(String.Format("{0}/Winlink_Messages.kml", winlinkPath)))
-                    {
-
-                    }
-
-                    if (mapItems.Count > 0)
-                    {
-                        // Send to web service
-                        string json = JsonSerializer.Serialize(mapItems);
-                        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(gisReceiverUrl);
-                        req.Method = "POST";
-                        req.ContentType = "application/json";
-                        Stream stream = req.GetRequestStream();
-                        byte[] buffer = Encoding.UTF8.GetBytes(json);
-                        stream.Write(buffer, 0, buffer.Length);
-                        HttpWebResponse res = (HttpWebResponse)req.GetResponse();
-                        Console.WriteLine("Server response: " + res.StatusDescription);
-
-                        if (res.StatusCode == HttpStatusCode.OK)
-                        {
-                            mapItems.Clear();
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("** The Winlink folder you specified does not exist.");
-                    continueRunning = false;
-                }
-            }
-        }
-
         private static void CheckWinlinkMessages(string path)
         {
             if (path != string.Empty)
@@ -135,19 +98,19 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 // Validate file path
                 if (Directory.Exists(path))
                 {
-                    DateTime newestNewMessageReceived = lastMessageReceived;
-
                     string[] filesMime = Directory.GetFiles(path, "*.mime");
-                    newestNewMessageReceived = ProcessFiles(filesMime, newestNewMessageReceived);
-
                     string[] filesBsf = Directory.GetFiles(path, "*.b2f");
-                    newestNewMessageReceived = ProcessFiles(filesBsf, newestNewMessageReceived);
+                    string[] filesToProcess = filesMime.Concatenate<string>(filesBsf);
 
-                    lastMessageReceived = newestNewMessageReceived;
+                    ProcessFiles(filesToProcess);
 
                     if (mapItems.Count > 0)
                     {
                         // Send to web service
+                        string suffix = "s";
+                        if (mapItems.Count < 2) { suffix = ""; }
+
+                        Console.WriteLine(String.Format("Sending {0} new message{1} to the server...", mapItems.Count, suffix));
 
                         string json = JsonSerializer.Serialize(mapItems);
                         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(gisReceiverUrl);
@@ -161,7 +124,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                         try
                         {
                             res = (HttpWebResponse)req.GetResponse();
-                            Console.WriteLine("Server response: " + res.StatusDescription);
+                            Console.WriteLine("  Server response: " + res.StatusDescription);
 
                             if (res.StatusCode == HttpStatusCode.OK)
                             {
@@ -170,8 +133,9 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("SERVER ERROR: " + ex.Message);
+                            Console.WriteLine("  ** SERVER ERROR: " + ex.Message);
                         }
+                        Console.WriteLine("");
                     }
                 }
                 else
@@ -189,29 +153,28 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
         /// <param name="files">String array containing full path filenames to the emails to process</param>
         /// <param name="newestNewMessageReceived">Datetime representing the date and time of the most recently processed email</param>
         /// <returns>Datetime representing the date and time of the most recently processed email</returns>
-        private static DateTime ProcessFiles(string[] files, DateTime newestNewMessageReceived)
+        private static void ProcessFiles(string[] files)
         {
-            DateTime outputNewestNewMessageReceived = newestNewMessageReceived;
             for (int i = 0; i < files.Length; i++)
             {
-                if (File.GetLastWriteTime(files[i]) > lastMessageReceived)
+                if (File.GetLastWriteTime(files[i]) > lastMessageCheck)
                 {
-                    if (newestNewMessageReceived < File.GetLastWriteTime(files[i]))
-                    {
-                        newestNewMessageReceived = File.GetLastWriteTime(files[i]);
-                    }
-
                     WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), files[i]);
 
                     if (msg.MessageXML != null && msg.MessageXML != string.Empty)
                     {
-                        Console.WriteLine(String.Format("- {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
+                        if (mapItems.Count == 0)
+                        {
+                            Console.Write(Environment.NewLine);
+                        }
+                        Console.WriteLine(String.Format(" - {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
                         MapItem mapItem = msg.ToMapItem();
                         mapItems.Add(mapItem);
                     }
                 }
             }
-            return outputNewestNewMessageReceived;
+
+            lastMessageCheck = DateTime.Now;
         }
 
         private static void CheckForUpdates(bool promptToInstall, string[] programArgs)
@@ -222,6 +185,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
             }
             else
             {
+                Console.WriteLine("Checking for updates...");
                 // Get the json releases from Github
                 Github.Release latestRelease;
                 using (WebClient wc = new WebClient())
@@ -252,7 +216,9 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     {
                         // Download the updated files
                         Console.Write(@"
-*****************************
+
+
+*************************************************************
 
 An updated version is available. Is is strongly recommended to update now.
 
@@ -261,7 +227,8 @@ New version: " + latestVersion + @"
 
 Proceed with the update? (Y/N)
                 
-*****************************
+*************************************************************
+
 ?: ");
 
                         string input = Console.ReadLine();
@@ -294,7 +261,7 @@ Proceed with the update? (Y/N)
                             }
 
                             // unzip file +++++
-                            ZipFile.ExtractToDirectory(tgtDir + Path.DirectorySeparatorChar + latestRelease.assets[zipfileAssetIndex].name, tgtDir);
+                            ZipFile.ExtractToDirectory(tgtDir + Path.DirectorySeparatorChar + latestRelease.assets[zipfileAssetIndex].name, tgtDir, true);
 
                             string allProgramArgs = "";
                             for (int i = 0; i < programArgs.Length; i++)
@@ -313,6 +280,10 @@ Proceed with the update? (Y/N)
                             Environment.Exit(0);
                         }
                     }
+                }
+                else
+                {
+                    Console.WriteLine("  No updates available.");
                 }
             }
         }

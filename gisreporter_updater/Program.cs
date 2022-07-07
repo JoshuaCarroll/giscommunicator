@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace gisreporter_updater
 {
@@ -8,23 +9,19 @@ namespace gisreporter_updater
     {
         static string pathToUpdateFiles;
         static string pathToCurrentFiles;
-        static int processIdOfProgram;
         static string commandToExecuteWhenDone;
 
         static void Main(string[] args)
         {
             if (args.Length < 4)
             {
-                Console.WriteLine("USAGE: gisreporter_updater [pathToUpdateFiles] [pathToCurrentFiles] [processNameOfProgramToUpdate] [commandToExecuteWhenDone]" + Environment.NewLine);
+                Console.WriteLine("USAGE: gisreporter_updater [pathToUpdateFiles] [pathToCurrentFiles] [commandToExecuteWhenDone]" + Environment.NewLine);
 
                 Console.Write("Path to the new files: ");
                 pathToUpdateFiles = Console.ReadLine();
 
                 Console.Write("Path to the current files: ");
                 pathToCurrentFiles = Console.ReadLine();
-
-                Console.Write("ID of current program process: ");
-                processIdOfProgram = int.Parse(Console.ReadLine());
 
                 Console.Write("Command to execute when done: ");
                 commandToExecuteWhenDone = Console.ReadLine();
@@ -36,20 +33,14 @@ namespace gisreporter_updater
             {
                 pathToUpdateFiles = args[0].ToString();
                 pathToCurrentFiles = args[1].ToString();
-                processIdOfProgram = int.Parse(args[2].ToString());
                 commandToExecuteWhenDone = args[3];
             }
 
-            Console.WriteLine(String.Format("Waiting for process {0} to exit...", processIdOfProgram));
+            Console.WriteLine(Environment.NewLine + Environment.NewLine);
+            Console.WriteLine("Waiting for previous program to stop...");
 
-            if (Process.GetProcessById(processIdOfProgram).WaitForExit(5000))
-            {
-                Console.WriteLine("  Process exited.");
-            }
-            {
-                Process.GetProcessById(processIdOfProgram).Kill();
-                Console.WriteLine("  Process killed after timeout.");
-            }
+            // We need to wait for the calling program to close before we can overwrite the files
+            Task.Delay(3000);
 
             string[] files = Directory.GetFiles(pathToUpdateFiles, "*.*");
             for (int i = 0; i < files.Length; i++)
