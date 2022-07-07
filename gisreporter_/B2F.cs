@@ -19,6 +19,7 @@ namespace gisreporter_
 
         public B2F(string MessageBody)
 		{
+            Files = new List<B2F_File>();
 
             string[] msgArr = MessageBody.Split("\r\n", StringSplitOptions.None);
 
@@ -69,15 +70,15 @@ namespace gisreporter_
         AfterLoop:
 
             string separator = "\r\n\r\n";
-            int cursor = MessageBody.IndexOf(separator) + separator.Length;
+            int cursor = MessageBody.IndexOf(separator) + 2;
 
-            string body = MessageBody.Substring(cursor, BodyLength + separator.Length);
-            cursor += BodyLength + separator.Length;
+            Body = MessageBody.Substring(cursor, BodyLength + 2).Trim();
+            cursor += BodyLength + 2;
 
             for (int i = 0; i < Files.Count; i++)
             {
-                Files[i].Contents = MessageBody.Substring(cursor, Files[i].Length + separator.Length);
-                cursor += Files[i].Length + separator.Length;
+                Files[i].Contents = MessageBody.Substring(cursor, Files[i].Length + 2).Trim();
+                cursor += Files[i].Length + 2;
             }
         }
     }
@@ -91,7 +92,7 @@ namespace gisreporter_
 		public B2F_File(string parameterValue)
         {
             char[] separators = { ' ' };
-            string[] strArr = parameterValue.Split(separators, 2);
+            string[] strArr = parameterValue.Trim().Split(separators, 2);
             Length = int.Parse(strArr[0].Trim());
             Filename = strArr[1].Trim();
         }

@@ -40,10 +40,14 @@ namespace gisreporter_
 
                     for (int i = 0; i < b2F.Files.Count; i++)
                     {
-                        if (Path.GetExtension(b2F.Files[i].Filename).ToLower() == ".xml")
+                        string ext = Path.GetExtension(b2F.Files[i].Filename).ToLower();
+                        if (ext == ".xml")
                         {
                             MessageXML = b2F.Files[i].Contents;
-                            goto AfterLoop;
+                        }
+                        else if (ext == ".txt")
+                        {
+                            MessageString = b2F.Files[i].Contents;
                         }
                     }
                     break;
@@ -96,8 +100,6 @@ namespace gisreporter_
 
                     break;
             }
-
-            AfterLoop:
 
             // Now let's parse the XML
             try
