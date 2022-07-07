@@ -8,6 +8,7 @@ using System.Text;
 using gisserver.map.gisreporter;
 using System.Reflection;
 using System.Diagnostics;
+using System.IO.Compression;
 
 namespace gisreporter_
 {
@@ -19,6 +20,7 @@ namespace gisreporter_
         private static DateTime lastMessageReceived;
         private static int numberOfTimerCycles = 0;
         private static bool updateIsAvailable = false;
+        public static double Version = 1.21;
 
         static void Main(string[] args)
         {
@@ -29,6 +31,8 @@ namespace gisreporter_
 |                               GIS Reporter                              |
 |                       by Joshua Carroll, AA5JC                          |
 \_________________________________________________________________________/
+
+Version " + Version + @"
 
 This program will monitor the folders specified for Winlink mapping/GIS reports. If a new
 message is received that contains mapping data, it will send the details of the report
@@ -211,108 +215,109 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
 
         private static void CheckForUpdates(bool promptToInstall, string[] programArgs)
         {
-            gisReporterPackage package;
-            gisReporterPackage oldPackage;
-
-            string baseUrl = "https://aa5jc.com/map/gisreporter/";
-            string currentDirectory = Directory.GetCurrentDirectory();
-
-            string oldPackageJson = currentDirectory + Path.DirectorySeparatorChar + "package.json";
-            if (File.Exists(oldPackageJson))
+            if (updateIsAvailable)
             {
-                string oldJson = File.ReadAllText(oldPackageJson);
-                oldPackage = JsonSerializer.Deserialize<gisReporterPackage>(oldJson);
+                updateAvailablePrompt();
             }
             else
             {
-                oldPackage = new gisReporterPackage();
-                oldPackage.PublishDateUTC = new DateTime(1970, 1, 1);
-            }
-
-            using (WebClient wc = new WebClient())
-            {
-                string json = wc.DownloadString(baseUrl + "/gisreporterversion.ashx");
-                package = JsonSerializer.Deserialize<gisReporterPackage>(json);
-            }
-
-            if ((package.PublishDateUTC > oldPackage.PublishDateUTC) || updateIsAvailable)
-            {
-                updateIsAvailable = true;
-                if (!promptToInstall)
+                // Get the json releases from Github
+                Github.ReleaseApi releaseApi;
+                using (WebClient wc = new WebClient())
                 {
-                    Console.Write(@"
-
-
-                *****************************
-
-                An updated version is available. Is is strongly recommended to update now.
-
-                Restart the console to update the GIS Reporter.
-                
-                *****************************
-
-
-                ?: ");
+                    string json = wc.DownloadString("https://api.github.com/repos/JoshuaCarroll/giscommunicator/releases");
+                    releaseApi = JsonSerializer.Deserialize<Github.ReleaseApi>(json);
                 }
-                else
+
+                string tag_name = releaseApi.Releases[0].tag_name;
+                if (tag_name.StartsWith("v", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    // Download the updated files
-                    Console.Write(@"
-                *****************************
+                    tag_name = tag_name.Substring(1);
+                }
 
-                An updated version is available. Is is strongly recommended to update now.
+                double latestVersion = double.Parse(tag_name);
+                if (latestVersion > Version)
+                {
+                    // Do the update
+                    string currentDirectory = Directory.GetCurrentDirectory();
 
-                Your version date: " + oldPackage.PublishDateUTC + @"
-                New version date: " + package.PublishDateUTC + @"
-
-                Proceed with the update? (Y/N)
-                
-                *****************************
-                ?: ");
-
-                    string input = Console.ReadLine();
-                    if (input.Trim().ToUpper() == "Y")
+                    updateIsAvailable = true;
+                    if (!promptToInstall)
                     {
-                        string srcDir = baseUrl + Path.DirectorySeparatorChar + "release" + Path.DirectorySeparatorChar;
-                        string tgtDir = currentDirectory + Path.DirectorySeparatorChar + "release";
+                        updateAvailablePrompt();
+                    }
+                    else
+                    {
+                        // Download the updated files
+                        Console.Write(@"
+*****************************
 
-                        Directory.CreateDirectory(tgtDir);
+An updated version is available. Is is strongly recommended to update now.
 
-                        // Download the update
-                        using (var wc = new WebClient())
+Your version date: " + Version + @"
+New version date: " + latestVersion + @"
+
+Proceed with the update? (Y/N)
+                
+*****************************
+?: ");
+
+                        string input = Console.ReadLine();
+                        if (input.Trim().ToUpper() == "Y")
                         {
-                            for (int i = 0; i < package.Files.Length; i++)
+                            // Find the zip file
+                            int zipfileAssetIndex = -1;
+                            for (int i = 0; i < releaseApi.Releases[0].assets.Count; i++)
                             {
-                                if (package.Files[i] != "")
+                                if (releaseApi.Releases[0].assets[i].name.ToLower().EndsWith(".zip"))
                                 {
-                                    Console.WriteLine(baseUrl + package.Files[i]);
-                                    wc.DownloadFile(srcDir + package.Files[i], currentDirectory + Path.DirectorySeparatorChar + "release" + Path.DirectorySeparatorChar + package.Files[i]);
+                                    zipfileAssetIndex = i;
+                                    break;
                                 }
                             }
+
+                            string tgtDir = currentDirectory + Path.DirectorySeparatorChar + "release";
+                            Directory.CreateDirectory(tgtDir);
+
+                            string[] oldUpdateFiles = Directory.GetFiles(tgtDir);
+                            for (int i = 0; i < oldUpdateFiles.Length; i++)
+                            {
+                                File.Delete(oldUpdateFiles[i]);
+                            }
+
+                            // Download the new package
+                            using (var wc = new WebClient())
+                            {
+                                wc.DownloadFile(releaseApi.Releases[0].assets[zipfileAssetIndex].browser_download_url, tgtDir + Path.DirectorySeparatorChar + releaseApi.Releases[0].assets[zipfileAssetIndex].name);
+                            }
+
+                            // unzip file +++++
+                            ZipFile.ExtractToDirectory(tgtDir + Path.DirectorySeparatorChar + releaseApi.Releases[0].assets[zipfileAssetIndex].name, tgtDir);
+
+                            string allProgramArgs = "";
+                            for (int i = 0; i < programArgs.Length; i++)
+                            {
+                                allProgramArgs += programArgs[i] + " ";
+                            }
+
+                            ProcessStartInfo startInfo = new ProcessStartInfo();
+                            startInfo.CreateNoWindow = false;
+                            startInfo.UseShellExecute = true;
+                            startInfo.FileName = "dotnet";
+                            startInfo.Arguments = String.Format("\"{0}{1}gisreporter_updater.dll\" \"{2}\" \"{0}\" \"{3}\" \"dotnet {4}{1}{5}.dll {6}\"", currentDirectory, Path.DirectorySeparatorChar, tgtDir, Process.GetCurrentProcess().Id, System.AppDomain.CurrentDomain.BaseDirectory, System.AppDomain.CurrentDomain.FriendlyName, allProgramArgs);
+                            startInfo.WindowStyle = ProcessWindowStyle.Normal;
+                            Process.Start(startInfo);
+
+                            Environment.Exit(0);
                         }
-
-                        string allProgramArgs = "";
-                        for (int i = 0; i < programArgs.Length; i++)
-                        {
-                            allProgramArgs += programArgs[i] + " ";
-                        }
-
-                        ProcessStartInfo startInfo = new ProcessStartInfo();
-                        startInfo.CreateNoWindow = false;
-                        startInfo.UseShellExecute = true;
-                        startInfo.FileName = "dotnet";
-                        startInfo.Arguments = String.Format("\"{0}{1}gisreporter_updater.dll\" \"{2}\" \"{0}\" \"{3}\" \"dotnet {4}{1}{5}.dll {6}\"", currentDirectory, Path.DirectorySeparatorChar, tgtDir, Process.GetCurrentProcess().Id, System.AppDomain.CurrentDomain.BaseDirectory, System.AppDomain.CurrentDomain.FriendlyName, allProgramArgs);
-                        startInfo.WindowStyle = ProcessWindowStyle.Normal;
-                        Process.Start(startInfo);
-
-                        Environment.Exit(0);
                     }
                 }
             }
-            else
-            {
-                Console.WriteLine("You have the most current version.");
-            }
+        }
+
+        private static void updateAvailablePrompt()
+        {
+            Console.Write(Environment.NewLine + Environment.NewLine + "** An updated version is available. Restart the program to update the GIS Reporter. **" + Environment.NewLine + Environment.NewLine);
         }
     }
 }
