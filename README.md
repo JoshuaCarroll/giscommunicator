@@ -8,7 +8,7 @@
   3. Follow the instructions there to create a KML file
   4. Unless your preferences change, you do *not* need to create another KML file in the future; the one provided will automatically update with new data.
   
-- Want to include data from your Winlink messages in our data?  You need the *GIS Reporter*.  Scroll down for more infomation and how to set it up.
+- Want to include data from Winlink messages the you receive in our data?  You need the *GIS Reporter*.  Scroll down for more infomation and how to set it up.
 
 
 # GIS Communicator
@@ -27,10 +27,12 @@ This *is* a console application (command line) that was written in C# on the Dot
 1. Download the zip file containing the latest release at https://github.com/JoshuaCarroll/giscommunicator/releases/latest
 2. Extract that zip file into any folder on your computer.
 3. Verify the installation of, or install DotNet Core runtime v3.1.
-  a. Open a terminal or command prompt window.
-  b. Type `dotnet --list-runtimes`.
-  c. If you get a list that includes "Microsoft.NETCore.App 3.1.x", skip to step 4. If you get an error or a list that doesn't include that, continue to item d.
-  d. Browse to https://aka.ms/dotnet-download to download the runtime, then install it.  Linux users, you may find it easier to run the commands found at  https://github.com/dotnet/core/issues/4360#issuecomment-627792352.
+
+  - Open a terminal or command prompt window.
+  - Type `dotnet --list-runtimes`.
+  - If you get a list that includes "Microsoft.NETCore.App 3.1.x", skip to step 4. If you get an error or a list that doesn't include that, continue to the next item.
+  - Browse to https://aka.ms/dotnet-download to download the runtime, then install it.  Linux users, you may find it easier to run the commands found at  https://github.com/dotnet/core/issues/4360#issuecomment-627792352.
+    
 4. Linux users, give the SETUP.sh script execute permission by typing: `sudo chmod +x SETUP.sh`
 5. Execute the setup script.  (Linux: SETUP.sh, Windows: SETUP.bat)
 6. Follow the instructions, the execute the "RUN" script to start the GIS Reporter.
