@@ -24,7 +24,7 @@ namespace gisreporter_
 
         static void Main(string[] args)
         {
-            Version = 1.24;
+            Version = 1.26;
 
 
             // Initialize global variables
@@ -61,7 +61,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
             Task t = Task.Run(async () => {
                 do
                 {
-                    int i = 3; // Seconds of delay between message checks.
+                    int i = 60; // Seconds of delay between message checks.
                     do
                     {
                         await Task.Delay(1000);
@@ -73,7 +73,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     CheckForNewData(args);
 
                     numberOfTimerCycles = numberOfTimerCycles + 1;
-                    if (numberOfTimerCycles % 60 == 0)
+                    if (numberOfTimerCycles % 40 == 0)
                     {
                         CheckForUpdates(false, args);
                     }
@@ -161,7 +161,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                 {
                     WinlinkMessage msg = new WinlinkMessage(File.ReadAllText(files[i]), files[i]);
 
-                    if (msg.MessageXML != null && msg.MessageXML != string.Empty)
+                    if (msg.MessageXML != null && msg.MessageXML.Trim() != string.Empty)
                     {
                         if (mapItems.Count == 0)
                         {
