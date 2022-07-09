@@ -14,21 +14,28 @@ read folders
 echo echo off > RUN.sh
 echo clear >> RUN.sh
 echo dotnet gisreporter_.dll $folders >> RUN.sh
-echo echo >> RUN.sh
-echo echo  ------------------------------------------------------------ >> RUN.sh
-echo echo  -                                                          - >> RUN.sh
-echo echo  -   If the program did not run, you need to install the    - >> RUN.sh
-echo echo  -     .Net Core 3.1 runtime.  You can download it at:      - >> RUN.sh
-echo echo  -                                                          - >> RUN.sh
-echo echo  -            https://aka.ms/dotnet-download                - >> RUN.sh
-echo echo  -                                                          - >> RUN.sh
-echo echo  ------------------------------------------------------------ >> RUN.sh
-echo read -n1 -r -p "Press any key to continue..." key >> RUN.sh
-echo  >> RUN.sh
 sudo chmod +x RUN.sh
-echo You can now run the program by executing RUN.sh.
-echo
-echo "For instructions on how you can view the reports, visit https://aa5jc.com/map"
-echo
+
+if (dotnet --list-runtimes | grep -q "Microsoft.NETCore.App 3.1")
+then
+    echo "DotNet Core v3.1 is installed.  Good to go."
+    echo " "
+    echo "To start GIS Reporter, execute RUN.sh in this folder."
+else
+    echo 
+    echo 
+    echo "STOP..  It looks like you do not have DotNet Core v3.1 installed."
+    echo " "
+    echo " Go to https://github.com/dotnet/core/issues/4360#issuecomment-627792352"
+    echo " for instructions on installing DotNet Core 3.1."
+    echo " "
+    echo " If that doesn't work for your operating system, go to the official"
+    echo " site at https://aka.ms/dotnet-download"
+    echo " "
+    echo " Once you get that installed, you can run GIS Reporter by "
+    echo " running RUN.sh"
+fi
+
+echo " "
 read -n1 -r -p "Press any key to continue..." key
 echo 
