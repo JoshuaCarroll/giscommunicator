@@ -9,6 +9,7 @@ using gisserver.map.gisreporter;
 using System.Reflection;
 using System.Diagnostics;
 using System.IO.Compression;
+using Utilties;
 
 namespace gisreporter_
 {
@@ -24,7 +25,7 @@ namespace gisreporter_
 
         static void Main(string[] args)
         {
-            Version = 1.26;
+            Version = 1.27;
 
 
             // Initialize global variables
@@ -110,7 +111,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                         string suffix = "s";
                         if (mapItems.Count < 2) { suffix = ""; }
 
-                        Console.WriteLine(String.Format("Sending {0} new message{1} to the server...", mapItems.Count, suffix));
+                        Console.WriteLine(String.Format(Environment.NewLine + "Sending {0} new message{1} to the server...", mapItems.Count, suffix));
 
                         string json = JsonSerializer.Serialize(mapItems);
                         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(gisReceiverUrl);
@@ -124,7 +125,7 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                         try
                         {
                             res = (HttpWebResponse)req.GetResponse();
-                            Console.WriteLine("  Server response: " + res.StatusDescription);
+                            Console.WriteLine("  - Server response: " + res.StatusDescription);
 
                             if (res.StatusCode == HttpStatusCode.OK)
                             {
@@ -165,9 +166,10 @@ Note: This can be added multiple times in case you have multiple callsigns, or w
                     {
                         if (mapItems.Count == 0)
                         {
-                            Console.Write(Environment.NewLine);
+                            Console.Write(Environment.NewLine + Environment.NewLine);
+                            Console.WriteLine("New messages received...");
                         }
-                        Console.WriteLine(String.Format(" - {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
+                        Console.WriteLine(String.Format("  - {0} received from {1} at {2}", msg.MessageSubject, msg.SendersCallsign, msg.DateTimeSent));
                         MapItem mapItem = msg.ToMapItem();
                         mapItems.Add(mapItem);
                     }
@@ -225,14 +227,14 @@ An updated version is available. Is is strongly recommended to update now.
 Your version: " + Version + @"
 New version: " + latestVersion + @"
 
-Proceed with the update? (Y/N)
+Proceed with the update? (Y/n)
                 
 *************************************************************
 
 ?: ");
 
-                        string input = Console.ReadLine();
-                        if (input.Trim().ToUpper() == "Y")
+                        string input = Reader.ReadLine("n", 10000);
+                        if ((input.Trim().ToUpper() == "Y") || (input.Trim() == ""))
                         {
                             // Find the zip file
                             int zipfileAssetIndex = -1;
