@@ -40,7 +40,7 @@ namespace gisreporter_updater
             Console.WriteLine("Waiting for previous program to stop...");
 
             // We need to wait for the calling program to close before we can overwrite the files
-            Task.Delay(3000);
+            Task.Delay(5000);
 
             string[] files = Directory.GetFiles(pathToUpdateFiles, "*.*");
             for (int i = 0; i < files.Length; i++)
