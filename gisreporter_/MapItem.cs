@@ -18,6 +18,13 @@ namespace gisreporter_
 
         public MapItem(string name, string description, string locationLatitude, string locationLongitude, string locationDescription, string icon, string reportedDateTime, string uniqueid, string recipient, string formData)
         {
+            Name = "N/A";
+            Description = "N/A";
+            LocationDescription = "N/A";
+            ReportedDateTime = DateTime.Now.ToString();
+            UniqueID = "N/A";
+            Recipient = "N/A";
+
             Name = name;
             Description = description;
             LocationLatitude = locationLatitude;
@@ -27,6 +34,7 @@ namespace gisreporter_
             UniqueID = uniqueid;
             Recipient = recipient;
             FormData = formData;
+            Icon = icon;
         }
 
         public string GetIconFromXml(string formData)
