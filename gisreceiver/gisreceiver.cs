@@ -18,13 +18,14 @@ namespace gisreceiver
         [FunctionName("gisreceiver")]
         public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
-            string connectionString = Environment.GetEnvironmentVariable("sqldb_connstr");
+            bool EnableVerboseLogging = false;
 
+            string connectionString = Environment.GetEnvironmentVariable("sqldb_connstr");
             var json = await new StreamReader(req.Body).ReadToEndAsync();
 
             if (json != String.Empty)
             {
-                //log.LogInformation(json);
+                if (EnableVerboseLogging) { log.LogInformation(json); }
                 MapItem[] mapItems = JsonConvert.DeserializeObject<MapItem[]>(json);
 
                 using (SqlConnection Connection = new SqlConnection(connectionString))
@@ -54,13 +55,13 @@ namespace gisreceiver
                         catch (Exception ex)
                         {
                             log.LogError("** " + mapItemCount.ToString() + "|" + mapItemLastUid + " " + ex);
-                            log.LogInformation(lastSql);
+                            if (EnableVerboseLogging) { log.LogInformation(lastSql); }
                         }
                     }
                     Connection.Close();
                 }
 
-                log.LogInformation(string.Format("Added {0} records.", mapItems.Length));
+                if (EnableVerboseLogging) { log.LogInformation(string.Format("Added {0} records.", mapItems.Length)); }
 
                 return (ActionResult)new OkObjectResult("Ok");
             }
@@ -104,6 +105,8 @@ namespace gisreceiver
             cmd.Parameters.AddWithValue("@Description", Description);
             cmd.Parameters.AddWithValue("@Icon", Icon);
             cmd.Parameters.AddWithValue("@ReportedDateTime", ReportedDateTime);
+
+            if (Recipient == null) { Recipient = "Unknown"; }
             cmd.Parameters.AddWithValue("@Recipient", Recipient);
 
             // Remove the UTF-8 declaration (confuses the hell out of SQL which requires UTF-16)
